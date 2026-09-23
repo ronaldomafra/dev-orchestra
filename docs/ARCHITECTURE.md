@@ -50,11 +50,27 @@ Valida comportamento, critérios de aceite e regressões.
 
 Papel opcional para análise técnica, decomposição ou investigação antes da implementação.
 
+### Session Transport
+
+Canal de comunicação entre Orchestrator e workers.
+
+É responsabilidade do transporte:
+
+- entregar handoffs;
+- entregar resultados;
+- permitir que sessões independentes conversem sem o usuário copiar mensagens.
+
+No Codex, o POC validado usa `codex app-server` + `codex queue`.
+
+Esse transporte é diferente do Task Source e da AI Memory.
+
 ### Task Source
 
-Interface conceitual para o backlog operacional.
+Interface conceitual exclusivamente para backlog e estado operacional.
 
 Primeira implementação: Trello via MCP.
+
+Task Source não é mensageria entre agentes.
 
 Possíveis futuras implementações:
 
@@ -91,7 +107,8 @@ Não substitui Task Source nem Git.
 | Trello adapter |      +---+----------+---+      +------------------+
 +----------------+          |          |
                             |          |
-                         handoff    handoff
+                    Session Transport
+                      handoff/result
                             |          |
                             v          v
                       +-----+---+  +---+-----+
@@ -123,10 +140,10 @@ Para tarefas de código paralelas:
 
 ## Evolução
 
-Fase 1: operação manual observável.
+Fase 1: validar comunicação Orchestrator <-> Developer pelo transporte nativo da CLI.
 
-Fase 2: scripts para bootstrap das sessões.
+Fase 2: integrar Task Source, AI Memory e QA ao fluxo.
 
-Fase 3: delegação parcialmente automatizada.
+Fase 3: scripts para bootstrap, descoberta de sessões e worktrees.
 
-Fase 4: adapters adicionais de Task Source e CLIs.
+Fase 4: adapters adicionais de Task Source, transportes e CLIs.
