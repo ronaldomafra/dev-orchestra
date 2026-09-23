@@ -2,9 +2,20 @@
 
 ## Conceito
 
-`Task Source` é a abstração para qualquer sistema que represente backlog e estado operacional do trabalho.
+`Task Source` é a abstração para qualquer sistema que represente **backlog e estado operacional do trabalho**.
+
+Esse é o único papel do Task Source no Dev Orchestra.
+
+Ele **não é**:
+
+- canal de comunicação entre agentes;
+- fila de mensagens;
+- memória durável;
+- transporte de handoffs entre sessões.
 
 O Dev Orchestra começa com Trello, mas o protocolo não deve depender de termos específicos como board, list ou card.
+
+O Trello é apenas a primeira implementação de backlog e pode ser substituído por Jira, GitHub Issues/Projects, Linear ou outra ferramenta.
 
 ## Modelo genérico
 
@@ -60,7 +71,7 @@ A política recomendada é:
 
 Isso mantém um único proprietário do estado operacional e reduz alterações concorrentes.
 
-Workers podem receber acesso direto ao Task Source quando houver um caso de uso real, mas esse acesso não é requisito para o fluxo básico.
+A comunicação Orchestrator <-> workers acontece pelo canal de comunicação entre sessões da CLI utilizada, não pelo Task Source.
 
 ## Falha do adapter
 
