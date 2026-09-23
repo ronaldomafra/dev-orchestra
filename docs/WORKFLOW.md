@@ -2,7 +2,15 @@
 
 ## Objetivo
 
-Começar manualmente, com sessões visíveis e responsabilidades claras, antes de automatizar a comunicação entre agentes.
+Operar com sessões visíveis e responsabilidades claras, usando um canal explícito de comunicação entre agentes.
+
+No Codex, o transporte já validado pelo POC é:
+
+```text
+codex app-server + codex queue
+```
+
+Antes de integrar backlog, memória e QA, execute [CODEX-QUEUE-POC.md](CODEX-QUEUE-POC.md).
 
 ## Sessões iniciais
 
@@ -84,7 +92,11 @@ ai-memory run --workstream developer claude
 
 Os workstreams permanecem associados ao mesmo projeto e compartilham conhecimento persistente, mas cada papel mantém seu próprio estado de execução.
 
-## Trello / Task Source
+## Task Source
+
+O Task Source é **somente backlog e estado operacional**. Ele é substituível.
+
+Trello é o primeiro adapter, mas não é canal de comunicação entre sessões e não deve ser usado como fila de mensagens.
 
 No fluxo inicial, o **Orchestrator é responsável por manter o Task Source sincronizado com o trabalho real**.
 
@@ -124,7 +136,11 @@ Orchestrator consulta somente o necessário:
 
 ### 4. Handoff
 
-Orchestrator envia uma mensagem seguindo `templates/handoff.md`.
+Orchestrator envia uma mensagem seguindo `templates/handoff.md` pelo canal entre sessões.
+
+No Codex, use `codex queue`.
+
+Depois do envio, o Orchestrator encerra o turno e aguarda o retorno. Ele não faz polling e não inspeciona arquivos para inferir se o worker terminou.
 
 ### 5. Execução
 
@@ -132,7 +148,9 @@ Developer trabalha no escopo recebido e evita expandir a tarefa sem autorizaçã
 
 ### 6. Retorno
 
-Developer responde com `templates/result.md`, incluindo resumo e evidências.
+Developer responde com `templates/result.md`, incluindo resumo e evidências, pelo mesmo canal de comunicação.
+
+No Codex, o Developer usa `codex queue` para enviar o resultado à sessão do Orchestrator. Essa mensagem inicia o próximo turno do Orchestrator quando a sessão estiver disponível.
 
 ### 7. Validação
 
@@ -202,9 +220,17 @@ Durante a fase manual:
 
 ## Primeiro teste recomendado
 
-Escolha uma tarefa pequena e objetiva.
+Primeiro valide apenas a comunicação entre sessões seguindo [CODEX-QUEUE-POC.md](CODEX-QUEUE-POC.md).
 
-Valide manualmente:
+Critério mínimo:
+
+1. Orchestrator envia uma tarefa ao Developer sem o usuário copiar mensagens.
+2. Developer recebe e executa.
+3. Developer devolve `DONE | PARTIAL | BLOCKED | FAILED` via canal entre sessões.
+4. Orchestrator recebe esse retorno em um novo turno.
+5. O usuário não precisa transportar UUIDs manualmente quando o Codex consegue fornecê-los para a sessão emissora.
+
+Depois valide o fluxo completo:
 
 1. Orchestrator consegue ler o Task Source.
 2. Handoff contém contexto suficiente.
@@ -223,7 +249,7 @@ Possíveis etapas futuras:
 - bootstrap de terminais;
 - tmux;
 - criação automática de worktrees;
-- envio automático de handoffs;
+- bootstrap e descoberta automática de sessões;
 - polling/eventos do Task Source;
 - workers adicionais.
 
