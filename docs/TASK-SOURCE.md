@@ -49,16 +49,18 @@ Mapeamento inicial sugerido:
 
 ## Regra de acesso
 
-Para a primeira versão, Codex CLI e Claude Code devem ter acesso ao conector/MCP necessário para consultar o Task Source.
+Na primeira versão, **o Orchestrator é a sessão que precisa obrigatoriamente de acesso ao Task Source**.
 
 A política recomendada é:
 
-- Orchestrator: leitura + atualização de estado;
-- Dev: leitura; comentário opcional;
-- QA: leitura; comentário/evidência opcional;
-- Planner: leitura.
+- Orchestrator: leitura + criação/atualização + transição de estado;
+- Developer: acesso direto opcional; normalmente trabalha a partir do handoff;
+- QA: acesso direto opcional; normalmente trabalha a partir de critérios + evidências;
+- Planner: acesso direto opcional quando a análise exigir leitura do backlog.
 
-Essa política poderá ser relaxada depois, mas começar restritivo reduz inconsistências.
+Isso mantém um único proprietário do estado operacional e reduz alterações concorrentes.
+
+Workers podem receber acesso direto ao Task Source quando houver um caso de uso real, mas esse acesso não é requisito para o fluxo básico.
 
 ## Falha do adapter
 
@@ -66,8 +68,9 @@ Se o Task Source estiver indisponível:
 
 - não inventar estado;
 - não marcar tarefa como concluída localmente;
-- devolver bloqueio de integração;
-- permitir execução somente se houver um handoff completo independente do adapter.
+- não afirmar que o backlog foi atualizado;
+- permitir execução somente se houver um handoff completo independente do adapter;
+- devolver ao Orchestrator o bloqueio de integração quando a sincronização for necessária.
 
 ## Futuro
 
