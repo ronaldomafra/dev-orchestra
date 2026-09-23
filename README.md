@@ -36,7 +36,7 @@ A proposta é manter um agente principal como **Orchestrator**, responsável por
 - **Orchestrator coordena; workers executam:** o contexto de planejamento fica separado do contexto pesado de implementação e testes.
 - **Memória persistente compartilhada:** decisões e conhecimento durável ficam fora da sessão temporária.
 - **Papéis explícitos:** cada terminal/sessão recebe uma responsabilidade bem definida.
-- **Portabilidade entre CLIs:** regras do projeto e memória não devem ficar presas a uma única ferramenta.
+- **Portabilidade entre CLIs:** `AGENTS.md` é o contrato global e canônico do projeto, evitando regras duplicadas por ferramenta.
 - **Contexto mínimo necessário:** cada agente recebe apenas o que precisa para cumprir a tarefa.
 - **Git como registro técnico:** código, documentação e contratos de agentes vivem no repositório.
 
@@ -52,6 +52,12 @@ A proposta é manter um agente principal como **Orchestrator**, responsável por
 | Task Source | Backlog e estado operacional das tarefas |
 | AI Memory | Contexto durável compartilhado entre sessões e CLIs |
 | Git | Código, documentação, histórico e artefatos técnicos |
+
+## Instruções dos agentes
+
+`AGENTS.md` é a fonte única das regras globais do Dev Orchestra para CLIs e agentes compatíveis.
+
+Cada sessão combina essas regras globais com um papel explícito em `roles/`, mantendo comportamento e responsabilidades separados sem duplicar instruções específicas para Codex, Claude Code ou outro fornecedor.
 
 ## Fonte de tarefas
 
@@ -75,7 +81,6 @@ Essa separação é central para evitar que o Orchestrator acumule todo o contex
 ```text
 .
 ├── AGENTS.md
-├── CLAUDE.md
 ├── README.md
 ├── docs/
 │   ├── ARCHITECTURE.md
