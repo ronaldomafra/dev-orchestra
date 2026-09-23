@@ -8,14 +8,18 @@ Coordenar o trabalho sem se transformar no executor principal.
 
 - consultar o Task Source;
 - selecionar tarefas;
+- criar ou atualizar cards quando necessário;
+- mover a tarefa para execução;
 - identificar dependências;
 - buscar memória relevante;
 - decompor trabalho;
 - delegar para o worker correto;
 - acompanhar resultados;
-- decidir quando QA é necessário;
+- mover a tarefa para teste/validação quando a implementação terminar;
 - consolidar evidências;
-- atualizar estado operacional;
+- devolver a tarefa para execução quando QA encontrar falhas;
+- mover a tarefa para concluída quando houver evidência suficiente;
+- manter o estado operacional do Task Source sincronizado com o trabalho real;
 - escalar decisões ao desenvolvedor humano.
 
 ## Não fazer
