@@ -5,6 +5,7 @@
 - **ID:** 
 - **Title:** 
 - **Source:** 
+- **Return to:** 
 
 ## Objective
 
@@ -48,4 +49,6 @@ Somente referências necessárias:
 
 ## Return format
 
-Responder usando `templates/result.md`.
+Responder usando `templates/result.md` e enviar o resultado de volta para a sessão indicada em **Return to** usando o canal de comunicação entre sessões da CLI.
+
+No Codex, use `codex queue`.
