@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Este arquivo contém as regras globais do **Dev Orchestra**. Elas valem para qualquer agente, CLI ou sessão usada neste repositório.
+Este arquivo contém as regras globais e canônicas do **Dev Orchestra**. Elas valem para qualquer agente, CLI ou sessão compatível usada neste repositório.
 
 ## 1. Princípio central
 
@@ -123,9 +123,13 @@ Escalone quando houver:
 
 ## 11. Portabilidade
 
-Não acople o protocolo a Codex, Claude Code ou outra CLI específica.
+`AGENTS.md` é o contrato universal e a fonte única das regras globais do Dev Orchestra.
 
-Arquivos específicos de ferramenta podem existir, mas devem apontar para estas regras e para os arquivos de papel, sem duplicar a arquitetura inteira.
+Não duplique regras globais em arquivos específicos de Codex, Claude Code ou qualquer outra CLI.
+
+Diferenças de responsabilidade entre sessões devem ser expressas pelos arquivos em `roles/`, enquanto diferenças de integração devem ficar isoladas em adapters, scripts ou configuração própria da ferramenta quando realmente necessárias.
+
+Uma troca de CLI não deve exigir reescrever as regras do projeto.
 
 ## 12. Regra de ouro
 
