@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Começar manualmente, com sessões visíveis, antes de automatizar.
+Começar manualmente, com sessões visíveis e responsabilidades claras, antes de automatizar a comunicação entre agentes.
 
 ## Sessões iniciais
 
@@ -12,7 +12,7 @@ Abra três terminais:
 2. Developer
 3. QA
 
-Opcionalmente abra um quarto:
+Opcionalmente:
 
 4. Planner
 
@@ -20,21 +20,73 @@ Cada terminal deve:
 
 - estar no mesmo projeto;
 - carregar `AGENTS.md`;
-- carregar seu arquivo em `roles/`;
-- ser iniciado através do AI Memory;
+- carregar o arquivo correspondente em `roles/`;
+- usar o AI Memory;
 - trabalhar em branch/worktree compatível com seu papel quando necessário.
 
-Como o AI Memory permite um escritor ativo por workstream, use nomes simples para as sessões paralelas:
+### Inicialização recomendada
 
-- `orchestrator`
-- `developer`
-- `qa`
+O padrão do Dev Orchestra é usar:
 
-Isso é apenas separação operacional das sessões; não cria uma nova camada de arquitetura.
+```bash
+ai-memory run <harness>
+```
+
+Exemplos:
+
+```bash
+ai-memory run codex
+ai-memory run claude
+```
+
+Uma CLI iniciada diretamente também pode continuar usando AI Memory quando hooks/MCP já estiverem configurados, mas `ai-memory run` é o launcher preferido porque:
+
+- prepara o escopo correto do projeto;
+- pode fazer auto-wiring das integrações suportadas;
+- gerencia continuidade entre harnesses;
+- gerencia workstreams.
+
+## Workstreams
+
+Workstreams são um detalhe operacional do AI Memory, não um novo componente arquitetural do Dev Orchestra.
+
+Um workstream representa uma linha lógica de trabalho. Como existe apenas um escritor ativo por workstream, sessões paralelas devem usar linhas distintas.
+
+Sugestão inicial:
+
+```text
+orchestrator
+developer
+qa
+```
+
+Criação:
+
+```bash
+ai-memory run --new orchestrator codex
+ai-memory run --new developer codex
+ai-memory run --new qa codex
+```
+
+Retomada:
+
+```bash
+ai-memory run --workstream orchestrator codex
+ai-memory run --workstream developer codex
+ai-memory run --workstream qa codex
+```
+
+Troca de harness mantendo a mesma linha lógica:
+
+```bash
+ai-memory run --workstream developer claude
+```
+
+Os workstreams permanecem associados ao mesmo projeto e compartilham conhecimento persistente, mas cada papel mantém seu próprio estado de execução.
 
 ## Trello / Task Source
 
-No fluxo inicial, o **Orchestrator é o responsável por manter o Task Source sincronizado com o trabalho real**.
+No fluxo inicial, o **Orchestrator é responsável por manter o Task Source sincronizado com o trabalho real**.
 
 Com Trello, isso inclui:
 
@@ -48,7 +100,7 @@ Com Trello, isso inclui:
 
 Developer e QA não precisam administrar o quadro. Eles recebem a tarefa, executam seu papel e devolvem resultado e evidências ao Orchestrator.
 
-Isso evita múltiplas sessões alterando o mesmo backlog ao mesmo tempo.
+Essa política reduz concorrência e mantém um único ponto responsável pelo estado operacional.
 
 ## Ciclo básico
 
@@ -62,9 +114,10 @@ Orchestrator move a tarefa para o estado de execução apropriado.
 
 ### 3. Contextualização
 
-Orchestrator consulta:
+Orchestrator consulta somente o necessário:
 
 - card/tarefa;
+- critérios de aceite;
 - memória relevante;
 - documentação;
 - dependências.
@@ -75,15 +128,15 @@ Orchestrator envia uma mensagem seguindo `templates/handoff.md`.
 
 ### 5. Execução
 
-Developer trabalha no escopo recebido.
+Developer trabalha no escopo recebido e evita expandir a tarefa sem autorização.
 
 ### 6. Retorno
 
-Developer responde com `templates/result.md`.
+Developer responde com `templates/result.md`, incluindo resumo e evidências.
 
 ### 7. Validação
 
-Orchestrator move a tarefa para teste/validação e envia os critérios e evidências para QA.
+Orchestrator move a tarefa para teste/validação e envia critérios + evidências para QA.
 
 QA valida a implementação e devolve o resultado.
 
@@ -100,9 +153,20 @@ Se QA encontrar problema, Orchestrator devolve a tarefa para execução com a ev
 
 ## Regra de contexto
 
-O Orchestrator não deve absorver logs e diffs completos se um resumo verificável for suficiente.
+O Orchestrator não deve absorver logs, diffs e transcrições completas se um resumo verificável for suficiente.
 
-Workers devem devolver síntese + evidência.
+Workers devem devolver:
+
+- síntese;
+- evidência;
+- riscos;
+- próximo passo recomendado.
+
+Informação temporária permanece na sessão.
+
+Informação durável pode ser promovida para AI Memory.
+
+Estado operacional permanece no Task Source.
 
 ## Fluxo de bug
 
@@ -131,13 +195,36 @@ Backlog
 
 Durante a fase manual:
 
-- Orchestrator: coordena e evita editar código de feature;
-- Developer: usa branch/worktree própria quando houver paralelismo;
-- QA: valida a branch do Developer ou usa worktree separada quando necessário;
-- merge final somente após validação.
+- Orchestrator coordena e evita editar código de feature;
+- Developer usa branch/worktree própria quando houver paralelismo;
+- QA valida a branch do Developer ou usa worktree separada quando necessário;
+- merge final acontece somente após validação.
+
+## Primeiro teste recomendado
+
+Escolha uma tarefa pequena e objetiva.
+
+Valide manualmente:
+
+1. Orchestrator consegue ler o Task Source.
+2. Handoff contém contexto suficiente.
+3. Developer executa sem precisar ler toda a história do projeto.
+4. QA consegue validar apenas com critérios + evidências.
+5. Orchestrator atualiza o backlog corretamente.
+6. Uma nova sessão recupera contexto útil pelo AI Memory.
+7. Trocar Codex por Claude Code dentro do mesmo workstream mantém continuidade suficiente.
 
 ## Quando automatizar
 
-Somente automatize depois de observar algumas execuções e identificar um problema recorrente que realmente justifique automação.
+Automatize somente depois de observar algumas execuções e identificar um problema recorrente.
 
-A regra é simples: não adicionar infraestrutura antes de existir necessidade real.
+Possíveis etapas futuras:
+
+- bootstrap de terminais;
+- tmux;
+- criação automática de worktrees;
+- envio automático de handoffs;
+- polling/eventos do Task Source;
+- workers adicionais.
+
+A regra é simples: **não adicionar infraestrutura antes de existir necessidade real**.
