@@ -36,7 +36,9 @@ A simplicidade é parte da arquitetura. Se algo não ajuda a **organizar tarefas
                             |
                             v
 Task Source <-------> Orchestrator <-------> AI Memory
-(Trello)              coordena                contexto durável
+(backlog)             coordena                contexto durável
+                           |
+                    canal entre sessões
                            |
                     +------+------+
                     |             |
@@ -47,6 +49,7 @@ Task Source <-------> Orchestrator <-------> AI Memory
                      \-----------/
                        resultados
 
+No Codex validado: codex app-server + codex queue
 Git -> código, documentação, branches, commits e evidências
 ```
 
@@ -308,7 +311,37 @@ O repositório contém os contratos que definem o fluxo:
 
 Para um projeto real, a ideia é levar esses contratos para o repositório do projeto ou adaptar a mesma estrutura.
 
-## 5. Primeira execução com três terminais
+## 5. Valide primeiro a comunicação nativa entre sessões Codex
+
+Antes de integrar backlog, memória ou QA, valide o fundamento do fluxo:
+
+```text
+Orchestrator
+   | codex queue
+   v
+Developer
+   | codex queue
+   v
+Orchestrator
+```
+
+O POC reproduzível está em:
+
+- [`docs/CODEX-QUEUE-POC.md`](docs/CODEX-QUEUE-POC.md)
+
+Nesse POC:
+
+- um `codex app-server` central recebe as conexões;
+- Orchestrator e Developer ficam em terminais separados;
+- `codex queue` é o canal de comunicação entre as sessões;
+- o Orchestrator delega e encerra o turno;
+- o Developer executa e devolve o resultado pelo mesmo canal;
+- o Orchestrator não faz polling nem verifica arquivos para inferir conclusão;
+- Trello/Task Source não participa da comunicação: ele é somente backlog.
+
+Depois que esse ciclo estiver funcionando, avance para AI Memory, Task Source e QA.
+
+## 6. Execução completa com três sessões
 
 Abra três terminais no mesmo checkout.
 
@@ -375,7 +408,7 @@ Leia AGENTS.md e roles/qa.md e assuma o papel de QA.
 Aguarde critérios de aceite e evidências antes de validar uma tarefa.
 ```
 
-## 6. Troque Codex e Claude Code sem trocar o papel
+## 7. Troque Codex e Claude Code sem trocar o papel
 
 O papel pertence ao Dev Orchestra, não à CLI.
 
@@ -389,7 +422,7 @@ O AI Memory gerencia a continuidade do workstream entre harnesses suportados.
 
 Isso permite testar qual CLI funciona melhor para cada tipo de trabalho sem transformar o histórico proprietário de uma ferramenta na única fonte de contexto do projeto.
 
-## 7. Teste o fluxo manual antes de automatizar
+## 8. Teste o fluxo completo
 
 Comece com um card pequeno e verificável.
 
@@ -437,9 +470,9 @@ Use:
 - `templates/handoff.md` para delegação;
 - `templates/result.md` para retorno.
 
-O primeiro objetivo **não é automatizar a comunicação entre terminais**.
+A comunicação Codex entre sessões já pode ser validada nativamente com `codex app-server` + `codex queue`. O objetivo desta etapa é validar o fluxo completo ao redor desse transporte.
 
-Primeiro valide se:
+Valide se:
 
 - separar papéis reduz confusão;
 - o backlog permanece coerente;
@@ -502,7 +535,7 @@ Não precisamos inicialmente de:
 Primeiro usamos:
 
 ```text
-Task Source + Orchestrator + Workers + AI Memory + Git
+Task Source + Orchestrator + canal entre sessões + Workers + AI Memory + Git
 ```
 
 Automação deve ser adicionada depois que o uso real revelar onde ela gera valor.
@@ -514,14 +547,22 @@ Automação deve ser adicionada depois que o uso real revelar onde ela gera valo
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — visão arquitetural.
 - [`docs/CONTEXT-MODEL.md`](docs/CONTEXT-MODEL.md) — separação de contexto.
 - [`docs/TASK-SOURCE.md`](docs/TASK-SOURCE.md) — abstração do backlog.
-- [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — handoff entre papéis.
+- [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — handoff e retorno entre papéis.
+- [`docs/CODEX-QUEUE-POC.md`](docs/CODEX-QUEUE-POC.md) — POC reproduzível de comunicação Orchestrator ↔ Developer via Codex.
 
 ## Estado atual
 
-O Dev Orchestra está na fase de validação do fluxo manual:
+O canal nativo de comunicação entre sessões Codex foi validado em POC:
 
 ```text
-Task Source -> Orchestrator -> Developer -> QA -> Orchestrator -> Task Source
+Orchestrator -> Developer -> Orchestrator
+       via codex app-server + codex queue
 ```
 
-A próxima etapa é usar essa arquitetura em projetos reais, observar os pontos de atrito e automatizar somente aquilo que se provar repetitivo.
+A próxima validação é integrar esse canal ao fluxo completo:
+
+```text
+Task Source -> Orchestrator -> Developer -> Orchestrator -> QA -> Orchestrator -> Task Source
+```
+
+O Task Source permanece somente como backlog. A comunicação entre agentes acontece pelo transporte da CLI utilizada.
