@@ -43,3 +43,9 @@ Informação durável descoberta nesta tarefa, se houver.
 
 - **Branch:** 
 - **Commit:** 
+
+## Delivery
+
+Envie este resultado ao Orchestrator pelo canal de comunicação entre sessões.
+
+No Codex, use `codex queue`. Não dependa do usuário para copiar o resultado entre terminais.
