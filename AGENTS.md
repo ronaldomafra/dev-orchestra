@@ -79,6 +79,14 @@ Use os contratos definidos em:
 
 Mensagens entre agentes devem ser curtas, verificáveis e orientadas a resultado.
 
+A comunicação entre sessões deve usar o transporte da CLI configurada. No Codex, o POC validado usa `codex app-server` + `codex queue`.
+
+O Task Source é somente backlog e estado operacional. Nunca o use como fila ou canal de comunicação entre agentes.
+
+Depois de delegar, o Orchestrator deve aguardar o retorno pelo canal entre sessões em vez de fazer polling ou inferir conclusão por inspeção de arquivos.
+
+Workers devem devolver o resultado ao Orchestrator pelo mesmo canal, sem depender de intervenção manual do usuário.
+
 ## 8. Memória
 
 Grave em AI Memory apenas informação com valor futuro, como:
