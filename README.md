@@ -4,6 +4,8 @@ Dev Orchestra é uma proposta de processo para organizar desenvolvimento assisti
 
 O Orchestrator coordena o trabalho e mantém o backlog. Workers executam tarefas delimitadas e devolvem evidências. A pessoa desenvolvedora continua responsável por decisões críticas.
 
+![Arquitetura do Dev Orchestra](docs/assets/dev-orchestra-architecture.webp)
+
 ## Por que existe
 
 Em projetos pessoais, tarefas e decisões acabam espalhadas entre post-its, conversas e sessões diferentes de IA. Um backlog visual ajuda a organizar o que deve ser feito, mas não define como sessões independentes colaboram.
