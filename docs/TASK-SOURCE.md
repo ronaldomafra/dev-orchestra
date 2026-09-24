@@ -1,96 +1,59 @@
 # Task Source
 
-## Conceito
+## Papel
 
-`Task Source` é a abstração para qualquer sistema que represente **backlog e estado operacional do trabalho**.
+Task Source é a abstração para a ferramenta que guarda backlog e estado operacional. Trello é o primeiro adapter documentado; o processo não depende de uma plataforma específica.
 
-Esse é o único papel do Task Source no Dev Orchestra.
+O Task Source responde a duas perguntas: o que precisa ser feito e em que estado está?
 
-Ele **não é**:
+## Campos úteis
 
-- canal de comunicação entre agentes;
+Uma tarefa pode incluir:
+
+- identificador e título;
+- descrição e critérios de aceite;
+- status e prioridade;
+- dependências, rótulos e referências;
+- metadados próprios do adapter.
+
+Nem toda plataforma precisa suportar todos os campos.
+
+## Responsabilidades
+
+No fluxo inicial, o Orchestrator é responsável por:
+
+- consultar tarefas elegíveis;
+- selecionar trabalho e considerar dependências;
+- registrar início, validação e conclusão;
+- anexar referências e evidências;
+- manter o estado do backlog coerente com o resultado recebido.
+
+Workers trabalham a partir do handoff. Seu acesso direto ao backlog é opcional e não os autoriza a mudar o status sem regra explícita.
+
+## O que o Task Source não é
+
+- canal de comunicação entre sessões;
 - fila de mensagens;
-- memória durável;
-- transporte de handoffs entre sessões.
+- memória técnica durável;
+- repositório de código ou documentação completa.
 
-O Dev Orchestra começa com Trello, mas o protocolo não deve depender de termos específicos como board, list ou card.
+Handoffs e resultados passam pelo canal configurado para a CLI. Conhecimento durável vai para AI Memory ou para documentação versionada, conforme o caso.
 
-O Trello é apenas a primeira implementação de backlog e pode ser substituído por Jira, GitHub Issues/Projects, Linear ou outra ferramenta.
+## Indisponibilidade
 
-## Modelo genérico
-
-Uma tarefa deve poder fornecer:
-
-- `id`
-- `title`
-- `description`
-- `status`
-- `priority`
-- `acceptanceCriteria`
-- `labels`
-- `dependencies`
-- `references`
-- `metadata`
-
-Nem todo adapter precisa suportar todos os campos.
-
-## Operações conceituais
-
-Um adapter deve tentar oferecer:
-
-- listar tarefas;
-- buscar tarefa por ID;
-- ler detalhes;
-- mudar estado;
-- adicionar comentário/evidência;
-- relacionar referências;
-- identificar bloqueios.
+Se o Task Source não estiver acessível, informe o bloqueio e não invente tarefas ou estados. Continue somente se o usuário ou o Orchestrator já forneceu a tarefa explicitamente. Não afirme que o backlog foi atualizado quando a integração falhou.
 
 ## Trello
 
 Mapeamento inicial sugerido:
 
-- Board -> workspace operacional do projeto;
-- List -> estado da tarefa;
-- Card -> tarefa;
-- Labels -> prioridade/tipo;
-- Checklist -> critérios ou subtarefas;
-- Comments -> histórico resumido/evidências;
-- Attachments/links -> PRs, logs ou documentos.
+| Trello | Task Source |
+| --- | --- |
+| Board | Espaço do projeto |
+| List | Estado da tarefa |
+| Card | Tarefa |
+| Labels | Prioridade ou tipo |
+| Checklist | Critérios ou subtarefas |
+| Comments e links | Histórico resumido e evidências |
 
-## Regra de acesso
-
-Na primeira versão, **o Orchestrator é a sessão que precisa obrigatoriamente de acesso ao Task Source**.
-
-A política recomendada é:
-
-- Orchestrator: leitura + criação/atualização + transição de estado;
-- Developer: acesso direto opcional; normalmente trabalha a partir do handoff;
-- QA: acesso direto opcional; normalmente trabalha a partir de critérios + evidências;
-- Planner: acesso direto opcional quando a análise exigir leitura do backlog.
-
-Isso mantém um único proprietário do estado operacional e reduz alterações concorrentes.
-
-A comunicação Orchestrator <-> workers acontece pelo canal de comunicação entre sessões da CLI utilizada, não pelo Task Source.
-
-## Falha do adapter
-
-Se o Task Source estiver indisponível:
-
-- não inventar estado;
-- não marcar tarefa como concluída localmente;
-- não afirmar que o backlog foi atualizado;
-- permitir execução somente se houver um handoff completo independente do adapter;
-- devolver ao Orchestrator o bloqueio de integração quando a sincronização for necessária.
-
-## Futuro
-
-Adapters possíveis:
-
-- `trello`
-- `jira`
-- `github-issues`
-- `github-projects`
-- `linear`
-
-O restante da arquitetura deve funcionar sem conhecer detalhes internos do adapter.
+A URL MCP documentada para o adapter Trello é https://mcp.trello.com/v1. Consulte a configuração atual da sua CLI e do serviço antes de conectar.

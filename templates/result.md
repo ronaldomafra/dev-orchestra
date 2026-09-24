@@ -1,51 +1,23 @@
-# Agent Result
+# Modelo de resultado
 
-## Task
+Use este modelo para devolver o resultado ao Orchestrator pelo mesmo canal usado para receber a tarefa. Mantenha STATUS, TASK, SUMMARY e EVIDENCE mesmo em uma resposta curta.
 
-- **ID:** 
+## Formato mínimo entre sessões
 
-## Status
+    STATUS: DONE | PARTIAL | BLOCKED | FAILED | NEEDS_REVIEW
+    TASK: <ID>
+    SUMMARY: <resumo curto>
+    EVIDENCE: <resultado verificável, incluindo se nenhum arquivo foi alterado>
 
-`DONE | PARTIAL | BLOCKED | FAILED | NEEDS_REVIEW`
+## Detalhes opcionais
 
-## Summary
+- **Mudanças:** arquivos e mudanças realizadas.
+- **Validação:** comandos/testes executados e resultado.
+- **Riscos / pendências:** riscos ou trabalho pendente.
+- **Memória candidata:** conhecimento durável que talvez mereça registro.
+- **Próximo passo recomendado:** próxima ação.
+- **Git:** branch e commit, quando aplicável.
 
-Resumo curto do que aconteceu.
+## Entrega
 
-## Changes
-
-- 
-
-## Validation
-
-- **Executed:** 
-- **Result:** 
-
-## Evidence
-
-- 
-
-## Risks / pending items
-
-- 
-
-## Memory candidate
-
-Informação durável descoberta nesta tarefa, se houver.
-
-- 
-
-## Recommended next step
-
-- 
-
-## Git
-
-- **Branch:** 
-- **Commit:** 
-
-## Delivery
-
-Envie este resultado ao Orchestrator pelo canal de comunicação entre sessões.
-
-No Codex, use `codex queue`. Não dependa do usuário para copiar o resultado entre terminais.
+No Codex, envie o resultado ao Orchestrator via codex queue. Uma resposta aceita pelo App Server confirma o enfileiramento; o resultado deve chegar à sessão de destino. Não dependa do usuário para transportar a mensagem.

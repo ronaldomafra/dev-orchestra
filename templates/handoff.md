@@ -1,54 +1,27 @@
-# Agent Handoff
+# Modelo de handoff
 
-## Task
+Use este modelo para delegar uma tarefa. Remova os campos sem uso e mantenha a mensagem curta.
 
-- **ID:** 
-- **Title:** 
-- **Source:** 
-- **Return to:** 
+## Mensagem mínima
 
-## Objective
+    TASK: <ID>
+    INSTRUCTION: <objetivo, escopo, critérios e restrições>
+    RETURN_TO: <nome exato ou UUID confirmado da sessão Orchestrator>
 
-Descreva em poucas linhas o resultado esperado.
+## Detalhes da tarefa
 
-## Scope
+- **Título:**
+- **Fonte:** Task Source ou solicitação explícita
+- **Objetivo:**
+- **Escopo:**
+- **Fora do escopo:**
+- **Critérios de aceite:**
+  - [ ]
+- **Restrições:**
+- **Referências necessárias:**
+- **Evidências esperadas:**
+- **Sessão de retorno:** Orchestrator
 
-Inclua o que faz parte da tarefa.
+## Retorno
 
-## Out of scope
-
-Liste explicitamente o que não deve ser alterado.
-
-## Acceptance criteria
-
-- [ ] 
-- [ ] 
-
-## Constraints
-
-- 
-
-## Relevant context
-
-Somente referências necessárias:
-
-- arquivos;
-- decisões;
-- memória;
-- links;
-- dependências.
-
-## Expected evidence
-
-- testes;
-- arquivos alterados;
-- logs relevantes;
-- screenshots;
-- commit/branch;
-- outra evidência necessária.
-
-## Return format
-
-Responder usando `templates/result.md` e enviar o resultado de volta para a sessão indicada em **Return to** usando o canal de comunicação entre sessões da CLI.
-
-No Codex, use `codex queue`.
+Instrua o worker a responder pelo mesmo canal usando templates/result.md. No Codex, a comunicação usa codex queue. O worker deve devolver o resultado sem depender de o usuário copiar mensagens.

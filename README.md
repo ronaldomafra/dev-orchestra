@@ -1,568 +1,177 @@
 # Dev Orchestra
 
-**Dev Orchestra** é uma arquitetura de trabalho para organizar desenvolvimento assistido por IA com múltiplas sessões especializadas, um backlog visual e memória persistente compartilhada.
+Dev Orchestra é uma proposta de processo para organizar desenvolvimento assistido por IA. Ela combina um backlog visual, sessões com papéis explícitos, um canal entre sessões, memória durável e Git.
 
-Não é um framework multiagente fechado nem um novo runtime. A proposta é combinar ferramentas que já existem — como Codex, Claude Code, Trello, AI Memory e Git — com papéis e responsabilidades explícitos, mantendo o desenvolvedor no controle.
+O Orchestrator coordena o trabalho e mantém o backlog. Workers executam tarefas delimitadas e devolvem evidências. A pessoa desenvolvedora continua responsável por decisões críticas.
 
-![Arquitetura do Dev Orchestra](docs/assets/dev-orchestra-architecture.webp)
+## Por que existe
 
-## Por que isso existe?
+Em projetos pessoais, tarefas e decisões acabam espalhadas entre post-its, conversas e sessões diferentes de IA. Um backlog visual ajuda a organizar o que deve ser feito, mas não define como sessões independentes colaboram.
 
-A ideia nasceu de um problema simples em projetos pessoais: conforme o projeto crescia, bugs, melhorias, ideias e decisões começaram a se espalhar entre conversas diferentes com agentes de IA.
-
-A primeira tentativa de organização foi bem física: **post-its no monitor**.
-
-Funcionava para lembrar o que precisava ser feito, mas os agentes não tinham acesso àquela visão. Depois comecei a organizar essas tarefas no Trello e surgiu a pergunta:
-
-> Se eu já tenho um backlog visual organizado, por que o agente que coordena o desenvolvimento não pode conversar diretamente com ele?
-
-A partir daí nasceu a ideia do Dev Orchestra: usar um backlog visível como referência operacional, separar coordenação de execução e preservar conhecimento entre sessões sem depender do histórico de uma única CLI.
-
-A proposta inicial é deliberadamente simples e de baixo custo:
-
-- Trello como primeiro backlog visual;
-- uma sessão de IA como Orchestrator;
-- sessões separadas para implementação, testes e planejamento quando necessário;
-- AI Memory como memória persistente entre sessões e CLIs;
-- Git como registro do código, documentação e contratos.
-
-A simplicidade é parte da arquitetura. Se algo não ajuda a **organizar tarefas, preservar contexto, separar responsabilidades ou melhorar a rastreabilidade**, provavelmente ainda não precisa fazer parte do Dev Orchestra.
+O Dev Orchestra conecta essas partes com uma esteira leve. Começa com ferramentas existentes, instruções claras e mensagens verificáveis; não exige um runtime multiagente próprio.
 
 ## A ideia em 30 segundos
 
-```text
-                       Developer
-                    supervisiona / decide
-                            |
-                            v
-Task Source <-------> Orchestrator <-------> AI Memory
-(backlog)             coordena                contexto durável
-                           |
+    Task Source <-> Orchestrator <-> AI Memory
+       backlog        coordena       conhecimento
+                          |
                     canal entre sessões
-                           |
-                    +------+------+
-                    |             |
-                    v             v
-                Developer         QA
-                 Session       Session
-                    \             /
-                     \-----------/
-                       resultados
+                          |
+                    +-----+-----+
+                    |           |
+                 Developer      QA
+                  executa     valida
+                               /
+                     resultados
 
-No Codex validado: codex app-server + codex queue
-Git -> código, documentação, branches, commits e evidências
-```
+    Git registra código, documentação, contratos e evidências.
 
-### Orchestrator
+O Task Source é backlog e estado operacional. O canal entre sessões carrega handoffs e resultados. AI Memory guarda conhecimento durável. Git guarda artefatos versionados.
 
-É a sessão responsável por coordenar o fluxo.
+## Papéis
 
-Ela:
+- **Orchestrator:** seleciona tarefas, reúne contexto mínimo, delega, consolida resultados e atualiza o Task Source.
+- **Developer:** implementa a tarefa recebida e retorna mudanças, validações e riscos.
+- **QA:** verifica critérios e evidências e devolve o resultado ao Orchestrator.
+- **Planner:** opcional; investiga dependências e divide tarefas antes da implementação.
+- **Pessoa desenvolvedora:** decide questões de produto e arquitetura que não podem ser inferidas com segurança.
 
-- consulta o backlog;
-- seleciona e prioriza trabalho dentro das regras definidas;
-- entende dependências;
-- reúne apenas o contexto necessário;
-- cria handoffs;
-- delega implementação, planejamento ou validação;
-- recebe resultados;
-- mantém o Task Source sincronizado;
-- registra conhecimento durável quando necessário;
-- pede decisão humana quando a tarefa exige julgamento de produto ou arquitetura.
+As instruções completas estão em roles/.
 
-No fluxo inicial, **o Orchestrator é o proprietário das alterações de estado do backlog**.
+## Esteira de trabalho
 
-### Developer
+    Backlog -> Orchestrator -> handoff -> Worker -> resultado
+                  ^                              |
+                  +------------------------------+
+                  |
+                  +-> QA quando necessário -> Task Source atualizado
 
-Recebe uma tarefa delimitada e fica focado em execução.
+1. O Orchestrator seleciona uma tarefa disponível.
+2. Envia objetivo, escopo, critérios e sessão de retorno ao worker.
+3. O worker executa somente o escopo recebido.
+4. O worker devolve resultado e evidências pelo mesmo canal.
+5. O Orchestrator consolida o resultado, chama QA quando necessário e atualiza o backlog.
 
-Devolve ao Orchestrator:
-
-- resumo do que foi feito;
-- arquivos alterados;
-- testes executados;
-- branch/commit quando aplicável;
-- riscos, limitações ou pendências;
-- possíveis aprendizados que mereçam memória durável.
-
-### QA
-
-Recebe critérios de aceite e evidências da implementação.
-
-Sua função é validar:
-
-- comportamento esperado;
-- regressões relevantes;
-- critérios de aceite;
-- evidências técnicas.
-
-QA não conclui o card diretamente. Ele devolve o resultado para o Orchestrator.
-
-### Planner
-
-É opcional.
-
-Pode ser usado quando uma tarefa precisa de:
-
-- investigação;
-- decomposição;
-- análise de impacto;
-- desenho técnico;
-- identificação de dependências antes da implementação.
+Depois de delegar, o Orchestrator aguarda a resposta pelo canal. Não faz polling nem usa arquivos para deduzir que a tarefa terminou.
 
 ## Onde cada informação vive
 
 | Informação | Fonte |
 | --- | --- |
-| Backlog, prioridade, status e critérios | Task Source |
-| Decisões e conhecimento durável | AI Memory |
-| Código, documentação e contratos | Git |
-| Trabalho temporário da tarefa atual | Session Context |
+| Backlog, prioridade e status | Task Source |
+| Decisões e conhecimento reutilizável | AI Memory |
+| Código, contratos e documentação | Git |
+| Contexto transitório da execução | Sessão atual |
 
-Regra simples:
+## Estado da proposta
 
-> **Task Source mostra o que precisa ser feito. AI Memory preserva o que aprendemos. Git registra o que construímos. A sessão mantém apenas o contexto necessário para executar o trabalho atual.**
+O App Server Codex iniciou e seus endpoints de saúde responderam HTTP 200. No Ubuntu, o sandbox também foi validado com `codex sandbox /bin/true` após habilitar o perfil AppArmor necessário; os passos estão em docs/CODEX-QUEUE-POC.md. O canal entre sessões via `codex app-server` e `codex queue` foi confirmado nos testes COMM-001, COMM-002 e COMM-003: o worker recebeu a tarefa e devolveu resultado ao Orchestrator sem alterar arquivos. No COMM-003, o envio pelo título `desenvolvedor-novo` falhou; o Orchestrator identificou a sessão e enviou pelo UUID, com sucesso.
 
-## Requisitos
+O workstream `developer` apareceu com harness `codex` em `ai-memory workstreams --json`; a retomada desse workstream deve ser exercitada seguindo as instruções abaixo. Um workstream separado, `developer_new`, apareceu sem harness vinculado, portanto não deve ser usado como evidência de continuidade. A integração completa com Task Source e QA ainda não foi validada. Consulte docs/CODEX-QUEUE-POC.md para reproduzir o teste de comunicação.
 
-Para experimentar o fluxo inicial você precisa de:
+## Começar
 
-- Git;
-- Docker ou Podman para a instalação padrão do AI Memory;
-- **AI Memory**;
-- pelo menos uma CLI de desenvolvimento assistido por IA:
-  - Codex CLI; ou
-  - Claude Code;
-- um Task Source:
-  - inicialmente Trello;
-- acesso MCP ao Task Source quando a plataforma utilizar MCP.
+1. Leia AGENTS.md e docs/WORKFLOW.md.
+2. Valide ou reproduza a comunicação nativa entre sessões seguindo docs/CODEX-QUEUE-POC.md.
+3. Crie e retome as sessões com AI Memory conforme as instruções abaixo.
+4. Use templates/handoff.md e templates/result.md para trocar tarefas e resultados.
 
-> [!IMPORTANT]
-> O padrão operacional do Dev Orchestra é iniciar as sessões com **`ai-memory run`**.
->
-> O AI Memory também pode funcionar com CLIs iniciadas diretamente quando hooks/MCP já estão configurados, mas `ai-memory run` é o caminho recomendado porque prepara o escopo do projeto, gerencia workstreams, permite continuidade entre harnesses e faz o auto-wiring das integrações suportadas.
+Nesta etapa, valide Codex e AI Memory sem configurar Trello. A integração com o Task Source e o fluxo com QA ficam para uma fase posterior.
 
-## 1. Instale uma CLI de IA
+AI Memory é a opção recomendada para memória persistente. Consulte o [guia de workstreams do AI Memory](https://github.com/akitaonrails/ai-memory/blob/main/docs/managed-workstreams.md) para instalação e comandos atuais.
 
-Você pode usar apenas Codex, apenas Claude Code ou misturar as duas ferramentas.
+### Criar e retomar sessões Codex com AI Memory
 
-### Codex CLI
-
-Com npm:
+Execute os comandos da raiz do repositório. Se o App Server ainda não estiver ativo, inicie-o em um terminal dedicado:
 
 ```bash
-npm install -g @openai/codex
+codex app-server --listen ws://127.0.0.1:4500
 ```
 
-Verifique:
+Mantenha o App Server aberto em um terminal. Abra outro terminal para cada sessão, sempre a partir da raiz deste repositório. `--new` cria um workstream independente; use-o uma única vez para cada linha de trabalho. Os comandos iniciam uma sessão interativa e permanecem em primeiro plano. Se o workstream já existir, pule a criação e use o comando de retomada abaixo.
+
+Orchestrator:
 
 ```bash
-codex --version
+ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500
 ```
 
-Documentação:
-
-https://github.com/openai/codex
-
-### Claude Code
-
-No Linux/macOS:
+Developer:
 
 ```bash
-curl -fsSL https://claude.ai/install.sh | bash
+ai-memory run --new developer codex --remote ws://127.0.0.1:4500
 ```
 
-Verifique:
+Na primeira abertura de cada sessão, defina o título da thread com `/rename` e, em seguida, envie a instrução do papel. Esses comandos são digitados dentro da sessão Codex, não no shell.
 
-```bash
-claude --version
-```
-
-Documentação:
-
-https://github.com/anthropics/claude-code
-
-## 2. Instale o AI Memory
-
-Projeto:
-
-https://github.com/akitaonrails/ai-memory
-
-O AI Memory fornece a camada persistente que permite:
-
-- capturar contexto entre sessões;
-- recuperar decisões e histórico;
-- continuar trabalho entre ferramentas diferentes;
-- compartilhar memória por projeto;
-- manter linhas de trabalho independentes com workstreams.
-
-### Instalação padrão com Docker
-
-A instalação oficial usa um wrapper local e um servidor em container.
-
-Consulte sempre o quick start do projeto para o procedimento atualizado:
-
-https://github.com/akitaonrails/ai-memory#quick-start
-
-Depois da instalação, valide:
-
-```bash
-ai-memory --help
-```
-
-Para o Dev Orchestra, o modo preferido de iniciar uma CLI é:
-
-```bash
-ai-memory run codex
-```
-
-ou:
-
-```bash
-ai-memory run claude
-```
-
-Na primeira execução de um harness suportado, o `ai-memory run` pode configurar automaticamente hooks e MCP necessários para captura e recuperação de memória.
-
-### Workstreams e sessões paralelas
-
-**Workstream não é um novo componente da arquitetura do Dev Orchestra.** É um recurso operacional do AI Memory.
-
-Um workstream representa uma linha lógica de trabalho. Como um mesmo workstream aceita apenas um escritor ativo por vez, sessões simultâneas devem usar workstreams separados.
-
-Para o primeiro teste:
+No Orchestrator:
 
 ```text
-orchestrator
-developer
-qa
+/rename orchestrator
 ```
 
-Todos continuam no mesmo projeto e compartilham conhecimento persistente, mas cada papel mantém sua própria linha de execução.
-
-## 3. Configure o Trello como Task Source
-
-O Trello é apenas o primeiro adapter do Dev Orchestra.
-
-O conceito genérico é **Task Source**, portanto futuramente o mesmo fluxo pode usar Jira, GitHub Issues/Projects, Linear ou outra plataforma.
-
-Para Trello, configure o MCP disponível para a sua CLI.
-
-Endpoint usado pelo Trello MCP:
-
-```text
-https://mcp.trello.com/v1
-```
-
-### Codex
-
-```bash
-codex mcp add trello --url https://mcp.trello.com/v1
-codex mcp list
-```
-
-### Claude Code
-
-```bash
-claude mcp add --transport http trello https://mcp.trello.com/v1
-```
-
-Conclua a autorização solicitada pela ferramenta.
-
-No fluxo inicial:
-
-- Orchestrator precisa consultar e atualizar o Task Source;
-- Developer recebe seu escopo pelo handoff;
-- QA recebe critérios e evidências pelo handoff;
-- acesso direto de workers ao Task Source é opcional.
-
-Essa restrição reduz alterações concorrentes no backlog.
-
-## 4. Clone o Dev Orchestra
-
-```bash
-git clone https://github.com/ronaldomafra/dev-orchestra.git
-cd dev-orchestra
-```
-
-O repositório contém os contratos que definem o fluxo:
-
-```text
-.
-├── AGENTS.md
-├── README.md
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── CONTEXT-MODEL.md
-│   ├── PROTOCOL.md
-│   ├── TASK-SOURCE.md
-│   ├── WORKFLOW.md
-│   └── assets/
-│       └── dev-orchestra-architecture.webp
-├── roles/
-│   ├── orchestrator.md
-│   ├── developer.md
-│   ├── qa.md
-│   └── planner.md
-└── templates/
-    ├── handoff.md
-    └── result.md
-```
-
-Para um projeto real, a ideia é levar esses contratos para o repositório do projeto ou adaptar a mesma estrutura.
-
-## 5. Valide primeiro a comunicação nativa entre sessões Codex
-
-Antes de integrar backlog, memória ou QA, valide o fundamento do fluxo:
-
-```text
-Orchestrator
-   | codex queue
-   v
-Developer
-   | codex queue
-   v
-Orchestrator
-```
-
-O POC reproduzível está em:
-
-- [`docs/CODEX-QUEUE-POC.md`](docs/CODEX-QUEUE-POC.md)
-
-Nesse POC:
-
-- um `codex app-server` central recebe as conexões;
-- Orchestrator e Developer ficam em terminais separados;
-- `codex queue` é o canal de comunicação entre as sessões;
-- o Orchestrator delega e encerra o turno;
-- o Developer executa e devolve o resultado pelo mesmo canal;
-- o Orchestrator não faz polling nem verifica arquivos para inferir conclusão;
-- Trello/Task Source não participa da comunicação: ele é somente backlog.
-
-Depois que esse ciclo estiver funcionando, avance para AI Memory, Task Source e QA.
-
-## 6. Execução completa com três sessões
-
-Abra três terminais no mesmo checkout.
-
-### Terminal 1 — Orchestrator
-
-Primeira criação:
-
-```bash
-ai-memory run --new orchestrator codex
-```
-
-Execuções seguintes:
-
-```bash
-ai-memory run --workstream orchestrator codex
-```
-
-Instrução inicial:
+Depois, envie:
 
 ```text
 Leia AGENTS.md e roles/orchestrator.md e assuma o papel de Orchestrator.
-Consulte o Task Source configurado e apresente o backlog antes de executar qualquer tarefa.
 ```
 
-### Terminal 2 — Developer
+No Developer:
 
-Primeira criação:
+```text
+/rename desenvolvedor
+```
+
+Depois, envie:
+
+```text
+Leia AGENTS.md, roles/developer.md e docs/PROTOCOL.md. Assuma o papel de Developer e aguarde um handoff do Orchestrator.
+```
+
+Quando encerrar uma sessão e quiser retomá-la depois, inicie `ai-memory run` novamente usando `--workstream` com a chave original. Faça isso somente depois que a execução anterior daquele workstream tiver terminado.
+
+Retomar o Orchestrator:
 
 ```bash
-ai-memory run --new developer codex
+ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500
 ```
 
-Execuções seguintes:
+Retomar o Developer:
 
 ```bash
-ai-memory run --workstream developer codex
+ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500
 ```
 
-Instrução inicial:
+O AI Memory retoma a sessão Codex vinculada ao workstream; não acrescente `resume <UUID>`. O nome de `--workstream` é a chave do AI Memory, não o título da thread definido com `/rename`. Como o workstream foi criado como `developer` e a thread se chama `desenvolvedor`, retome com `--workstream developer`. Usar `--workstream desenvolvedor` causa erro `managed workstream not found`.
 
-```text
-Leia AGENTS.md e roles/developer.md e assuma o papel de Developer.
-Aguarde um handoff do Orchestrator antes de iniciar implementação.
-```
-
-### Terminal 3 — QA
-
-Primeira criação:
+Só crie outro workstream de Developer quando precisar de uma linha de trabalho independente. Use `--new` uma vez na criação:
 
 ```bash
-ai-memory run --new qa codex
+ai-memory run --new developer-2 codex --remote ws://127.0.0.1:4500
 ```
 
-Execuções seguintes:
+Em execuções futuras, retome essa mesma linha assim:
 
 ```bash
-ai-memory run --workstream qa codex
+ai-memory run --workstream developer-2 codex --remote ws://127.0.0.1:4500
 ```
 
-Instrução inicial:
-
-```text
-Leia AGENTS.md e roles/qa.md e assuma o papel de QA.
-Aguarde critérios de aceite e evidências antes de validar uma tarefa.
-```
-
-## 7. Troque Codex e Claude Code sem trocar o papel
-
-O papel pertence ao Dev Orchestra, não à CLI.
-
-Por exemplo, uma linha de trabalho criada no Codex pode ser retomada no Claude Code:
+Confira workstreams e harnesses associados com:
 
 ```bash
-ai-memory run --workstream developer claude
+ai-memory workstreams --json
 ```
 
-O AI Memory gerencia a continuidade do workstream entre harnesses suportados.
+O campo `linked_harnesses` deve incluir `codex` para confirmar que o workstream está associado à CLI. Para testar a retomada de ponta a ponta, registre uma palavra ou identificador único na sessão, encerre-a, execute o comando `--workstream` correspondente e peça à sessão retomada que recupere esse identificador. Considere a retomada validada quando a thread correta abrir e o identificador estiver acessível. Não execute duas instâncias simultâneas no mesmo workstream. As opções do AI Memory (`--new`, `--workstream`) vêm antes de `codex`; as opções nativas (`--remote`) vêm depois.
 
-Isso permite testar qual CLI funciona melhor para cada tipo de trabalho sem transformar o histórico proprietário de uma ferramenta na única fonte de contexto do projeto.
+## Documentos
 
-## 8. Teste o fluxo completo
-
-Comece com um card pequeno e verificável.
-
-Exemplo:
-
-```text
-Título: Criar endpoint de health check
-
-Critérios:
-- GET /health
-- retornar HTTP 200
-- resposta deve indicar status UP
-```
-
-Fluxo esperado:
-
-```text
-Backlog
-   |
-   v
-Orchestrator
-   |
-   | handoff
-   v
-Developer
-   |
-   | resultado + evidências
-   v
-Orchestrator
-   |
-   | critérios + evidências
-   v
-QA
-   |
-   | resultado
-   v
-Orchestrator
-   |
-   v
-Task Source atualizado
-```
-
-Use:
-
-- `templates/handoff.md` para delegação;
-- `templates/result.md` para retorno.
-
-A comunicação Codex entre sessões já pode ser validada nativamente com `codex app-server` + `codex queue`. O objetivo desta etapa é validar o fluxo completo ao redor desse transporte.
-
-Valide se:
-
-- separar papéis reduz confusão;
-- o backlog permanece coerente;
-- o Orchestrator não acumula contexto técnico demais;
-- o AI Memory recupera contexto útil entre sessões;
-- trocar de CLI mantém a continuidade esperada;
-- os handoffs possuem informação suficiente sem copiar conversas inteiras.
-
-## AGENTS.md
-
-`AGENTS.md` é o contrato global do Dev Orchestra.
-
-Os papéis específicos ficam em:
-
-```text
-roles/orchestrator.md
-roles/developer.md
-roles/qa.md
-roles/planner.md
-```
-
-O repositório intencionalmente evita duplicar regras globais em arquivos específicos de fornecedor.
-
-Ao usar uma CLI, confirme que a versão/configuração instalada carrega `AGENTS.md` como instrução de projeto.
-
-## Fluxo básico do backlog
-
-Uma configuração simples pode usar:
-
-```text
-Backlog -> Em execução -> Em teste -> Concluído
-```
-
-Exemplo:
-
-1. Orchestrator lê o backlog.
-2. Seleciona um card e move para **Em execução**.
-3. Cria o handoff para Developer.
-4. Developer implementa e devolve o resultado.
-5. Orchestrator move o card para **Em teste**.
-6. QA valida.
-7. Se aprovado, Orchestrator move para **Concluído**.
-8. Se houver falha, Orchestrator devolve para **Em execução** anexando a evidência.
-
-Os nomes das colunas são configuráveis. O importante é existir um mapeamento claro entre estado real e estado visível.
-
-## Princípio de simplicidade
-
-A primeira versão começa manualmente de propósito.
-
-Não precisamos inicialmente de:
-
-- servidor próprio de orquestração;
-- fila de mensagens;
-- banco de dados adicional;
-- dashboard próprio;
-- runtime multiagente customizado;
-- delegação automática completa.
-
-Primeiro usamos:
-
-```text
-Task Source + Orchestrator + canal entre sessões + Workers + AI Memory + Git
-```
-
-Automação deve ser adicionada depois que o uso real revelar onde ela gera valor.
-
-## Documentação
-
-- [`AGENTS.md`](AGENTS.md) — regras globais.
-- [`docs/WORKFLOW.md`](docs/WORKFLOW.md) — fluxo operacional.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — visão arquitetural.
-- [`docs/CONTEXT-MODEL.md`](docs/CONTEXT-MODEL.md) — separação de contexto.
-- [`docs/TASK-SOURCE.md`](docs/TASK-SOURCE.md) — abstração do backlog.
-- [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — handoff e retorno entre papéis.
-- [`docs/CODEX-QUEUE-POC.md`](docs/CODEX-QUEUE-POC.md) — POC reproduzível de comunicação Orchestrator ↔ Developer via Codex.
-
-## Estado atual
-
-O canal nativo de comunicação entre sessões Codex foi validado em POC:
-
-```text
-Orchestrator -> Developer -> Orchestrator
-       via codex app-server + codex queue
-```
-
-A próxima validação é integrar esse canal ao fluxo completo:
-
-```text
-Task Source -> Orchestrator -> Developer -> Orchestrator -> QA -> Orchestrator -> Task Source
-```
-
-O Task Source permanece somente como backlog. A comunicação entre agentes acontece pelo transporte da CLI utilizada.
+- AGENTS.md — contrato global para todas as sessões e CLIs.
+- docs/ARCHITECTURE.md — componentes e fluxo.
+- docs/CONTEXT-MODEL.md — responsabilidade de cada fonte de contexto.
+- docs/PROTOCOL.md — formato de handoff, retorno e identificação de sessões.
+- docs/TASK-SOURCE.md — papel e limites do backlog.
+- docs/WORKFLOW.md — instruções operacionais.
+- docs/CODEX-QUEUE-POC.md — configuração e validação do canal Codex.
+- roles/ — instruções específicas por papel.
+- templates/ — modelos para delegação e resultado.

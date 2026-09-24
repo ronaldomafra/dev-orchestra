@@ -2,279 +2,104 @@
 
 ## Objetivo
 
-Validar a base do Dev Orchestra no Codex:
+Validar uma troca de mensagens entre duas sessões Codex independentes usando o mesmo App Server. O worker recebe uma tarefa e envia a confirmação ao Orchestrator sem o usuário copiar mensagens entre terminais.
 
-> uma sessão **Orchestrator** envia trabalho para uma sessão **Developer** em outro terminal, e o Developer devolve o resultado para o Orchestrator pelo mesmo canal de comunicação.
+Esta etapa valida somente o canal. Não usa Trello, QA ou AI Memory.
 
-Neste POC usamos somente recursos nativos do Codex:
+## Requisitos
 
-- `codex app-server`;
-- `codex queue`;
-- sessões Codex conectadas ao mesmo App Server.
+- Codex CLI com codex queue disponível;
+- um terminal para o App Server;
+- terminais separados para Orchestrator e Developer;
+- mesma URL de App Server nas duas sessões.
 
-Não use Trello, AI Memory, QA ou qualquer fila externa neste teste.
+Confira a CLI e o comando:
 
-O Trello/Task Source é backlog. **Não é canal de comunicação entre agentes.**
+    codex --version
+    codex queue --help
 
-## Resultado esperado
+## 1. Inicie o App Server
 
-```text
-Terminal 1                     Terminal 2               Terminal 3
-Codex App Server               Orchestrator              Developer
-      |                             |                        |
-      |<------ conexão ------------|                        |
-      |<------ conexão -------------------------------------|
-      |                             |                        |
-      |<---- codex queue -----------|                        |
-      |----------------------- tarefa ---------------------->|
-      |                             |                        |
-      |<-------------------------------- codex queue --------|
-      |------- resultado ---------->|                        |
-```
+Em um terminal dedicado:
 
-O Orchestrator não verifica arquivos para descobrir se o Developer terminou. Depois de delegar, ele encerra seu turno e aguarda a mensagem de retorno enviada pelo Developer via `codex queue`.
+    codex app-server --listen ws://127.0.0.1:4500
 
----
+Mantenha o processo aberto. Em outro terminal, os endpoints de saúde devem responder HTTP 200:
 
-## 1. Verifique o Codex
+    curl -i http://127.0.0.1:4500/readyz
+    curl -i http://127.0.0.1:4500/healthz
 
-```bash
-codex --version
-codex queue --help
-```
+## 2. Inicie o Orchestrator
 
-O comando `codex queue` deve estar disponível.
+Em outro terminal, na raiz do projeto:
 
-## 2. Crie uma pasta de teste
+    codex --remote ws://127.0.0.1:4500
 
-```bash
-mkdir -p ~/dev-orchestra-poc
-cd ~/dev-orchestra-poc
-git init
-echo "# Dev Orchestra POC" > README.md
-```
+Dentro da sessão, defina o nome:
 
-Use a mesma pasta nos três terminais.
+    /rename orchestrator-poc
 
----
+Carregue AGENTS.md e roles/orchestrator.md.
 
-## 3. Terminal 1 — App Server
+## 3. Inicie o Developer
 
-```bash
-cd ~/dev-orchestra-poc
-codex app-server --listen ws://127.0.0.1:4500
-```
+Em um terminal separado, no mesmo projeto:
 
-Deixe esse terminal aberto.
+    codex --remote ws://127.0.0.1:4500
 
----
+Dentro da sessão, defina o nome:
 
-## 4. Terminal 2 — Orchestrator
+    /rename developer-poc
 
-```bash
-cd ~/dev-orchestra-poc
-codex --remote ws://127.0.0.1:4500
-```
+Carregue AGENTS.md e roles/developer.md.
 
-Dentro do Codex:
+## 4. Envie uma tarefa sem alterar arquivos
 
-```text
-/rename orchestrator-poc
-```
+O Orchestrator envia ao Developer:
 
-Depois cole:
+    codex queue --remote ws://127.0.0.1:4500 --thread developer-poc --message 'TASK: COMM-001
+    INSTRUCTION: Confirme o recebimento. Não crie nem altere arquivos.
+    RETURN_TO: orchestrator-poc'
 
-```text
-Você é o Orchestrator deste POC.
+Depois do envio, o Orchestrator encerra o turno e aguarda. Não verifica arquivos ou processos para inferir conclusão.
 
-Configuração:
-- App Server: ws://127.0.0.1:4500
-- sessão Developer: developer-poc
-- sua sessão: orchestrator-poc
+## 5. Envie o resultado
 
-Regras:
-1. Delegue tarefas ao Developer exclusivamente usando codex queue.
-2. Não execute a tarefa destinada ao Developer.
-3. Não verifique arquivos, Git ou processos para inferir se o Developer terminou.
-4. Não faça polling.
-5. Depois de enviar o handoff, encerre seu turno e aguarde uma nova mensagem chegar pelo canal.
-6. O retorno oficial da execução é a mensagem que o Developer enviar para sua sessão via codex queue.
-7. Ao receber o retorno, processe STATUS, TASK, SUMMARY e EVIDENCE.
+Depois de receber a tarefa, o Developer envia:
 
-Resolução da sessão:
-- tente primeiro usar --thread developer-poc;
-- se o Codex informar um UUID correspondente porque não conseguiu confirmar a unicidade do nome, capture esse UUID automaticamente e repita o comando;
-- não peça o UUID ao usuário;
-- se houver mais de uma sessão realmente candidata e não for possível determinar qual é a correta, não escolha aleatoriamente.
+    codex queue --remote ws://127.0.0.1:4500 --thread orchestrator-poc --message 'STATUS: DONE
+    TASK: COMM-001
+    SUMMARY: Confirmei o recebimento da tarefa.
+    EVIDENCE: A mensagem foi recebida; nenhum arquivo foi alterado.'
 
-Toda tarefa enviada deve informar:
-TASK: <id>
-INSTRUCTION: <instrução>
-RETURN_TO: orchestrator-poc
+## Identificação da sessão
 
-Também instrua o Developer a enviar o resultado de volta para orchestrator-poc usando codex queue.
-```
+O Codex aceita o nome exato da sessão ou seu UUID como valor de thread. Use /rename para dar nomes distintos e tente o nome exato primeiro. Se o Codex retornar o UUID correspondente, repita o envio usando esse UUID. Não escolha uma sessão ambígua por tentativa.
 
----
+Na validação local, o envio pelo UUID da sessão foi aceito. Se o nome não resolver e o Codex não fornecer uma identificação segura, informe o bloqueio; não adivinhe nem inspecione processos de outros agentes para encontrar um destino.
 
-## 5. Terminal 3 — Developer
+## Critério de sucesso
 
-```bash
-cd ~/dev-orchestra-poc
-codex --remote ws://127.0.0.1:4500
-```
+- O Developer recebe COMM-001 pelo canal.
+- O Developer devolve STATUS, TASK, SUMMARY e EVIDENCE pelo mesmo canal.
+- O Orchestrator recebe o resultado em sua sessão.
+- Nenhum arquivo é alterado pelo teste.
 
-Dentro do Codex:
+O teste COMM-001 foi confirmado em 2026-09-23. A mensagem de retorno chegou ao Orchestrator via codex queue usando o UUID da sessão, sem alteração de arquivos. A troca entre sessões está validada.
 
-```text
-/rename developer-poc
-```
+## Se o sandbox falhar no Ubuntu 24.04
 
-Depois cole:
+Use estes passos somente quando o Codex reportar que o AppArmor impede a criação de user namespaces. Os comandos foram validados neste ambiente em 2026-09-23:
 
-```text
-Você é o Developer deste POC.
+    sudo apt update
+    sudo apt install bubblewrap apparmor-profiles apparmor-utils
+    sudo install -m 0644 /usr/share/apparmor/extra-profiles/bwrap-userns-restrict /etc/apparmor.d/bwrap-userns-restrict
+    sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+    sudo aa-status | grep bwrap
+    codex sandbox /bin/true
 
-Configuração:
-- App Server: ws://127.0.0.1:4500
-- sessão Orchestrator: orchestrator-poc
-- sua sessão: developer-poc
+O perfil deve aparecer carregado e o comando de sandbox deve terminar sem erro. Consulte também a [documentação oficial do sandbox do Codex](https://developers.openai.com/pt-BR/docs/sandboxing).
 
-Regras:
-1. Receba tarefas pelo canal codex queue.
-2. Execute somente a tarefa recebida.
-3. Ao terminar, envie obrigatoriamente o resultado para orchestrator-poc usando codex queue.
-4. Não espere o usuário pedir o retorno.
-5. Não considere suficiente escrever o resultado apenas na sua própria sessão.
-6. Depois de enviar o retorno, encerre seu turno.
+## Limite do POC
 
-Resolução da sessão:
-- tente primeiro usar --thread orchestrator-poc;
-- se o Codex informar um UUID correspondente porque não conseguiu confirmar a unicidade do nome, capture esse UUID automaticamente e repita o comando;
-- não peça o UUID ao usuário;
-- se houver mais de uma sessão realmente candidata e não for possível determinar qual é a correta, não escolha aleatoriamente.
-
-Formato do retorno:
-
-STATUS: DONE | PARTIAL | BLOCKED | FAILED
-TASK: <id>
-SUMMARY: <resumo curto>
-EVIDENCE: <evidência relevante>
-```
-
----
-
-## 6. Teste Orchestrator -> Developer -> Orchestrator
-
-No Terminal 2, envie ao Orchestrator:
-
-```text
-Delegue a tarefa TEST-001 para o Developer:
-
-Crie o arquivo conversa.txt contendo exatamente:
-
-SESSIONS ARE TALKING
-
-Depois de enviar a tarefa, aguarde o retorno do Developer pelo canal de comunicação.
-```
-
-### Comportamento esperado
-
-O Orchestrator deve executar algo equivalente a:
-
-```bash
-codex queue \
-  --remote ws://127.0.0.1:4500 \
-  --thread developer-poc \
-  --message "TASK: TEST-001
-INSTRUCTION: Crie o arquivo conversa.txt contendo exatamente SESSIONS ARE TALKING
-RETURN_TO: orchestrator-poc
-
-Quando terminar, envie o resultado de volta para orchestrator-poc usando codex queue."
-```
-
-Se o nome não puder ser confirmado como único, o próprio Orchestrator deve ler o UUID retornado pelo Codex e repetir o envio usando esse UUID.
-
-Depois do envio, **o Orchestrator deve parar**. Ele não deve abrir `conversa.txt` nem fazer qualquer checagem para descobrir se o Developer terminou.
-
-O Developer recebe a tarefa, executa e envia de volta algo equivalente a:
-
-```text
-STATUS: DONE
-TASK: TEST-001
-SUMMARY: arquivo criado com sucesso
-EVIDENCE: conversa.txt criado
-```
-
-O retorno também deve ser enviado via `codex queue` para a sessão `orchestrator-poc`.
-
-Quando a mensagem chegar, ela inicia o próximo turno do Orchestrator. Só então ele processa o resultado recebido.
-
----
-
-## 7. Critério de sucesso do POC
-
-O POC está validado quando acontecer sem intervenção manual entre as sessões:
-
-```text
-Você
-  |
-  v
-Orchestrator
-  |
-  | codex queue
-  v
-Developer
-  |
-  | executa
-  | codex queue
-  v
-Orchestrator
-```
-
-Você pode observar os terminais, mas não deve copiar a mensagem de uma sessão para a outra.
-
-## Problemas conhecidos durante o teste
-
-### "Multiple sessions match"
-
-Exemplo:
-
-```text
-Multiple sessions match 'developer' ... use a session UUID to disambiguate.
-```
-
-Existem várias sessões com o mesmo nome. Use nomes de POC mais específicos e deixe o agente resolver o UUID quando necessário.
-
-### "Cannot verify a unique session label across server pages"
-
-Exemplo:
-
-```text
-Cannot verify a unique session label across server pages; matching session UUID: <UUID>.
-```
-
-Isso não exige que o usuário copie o UUID.
-
-A sessão emissora deve:
-
-1. ler o UUID informado pelo próprio Codex;
-2. repetir automaticamente o `codex queue` com `--thread <UUID>`;
-3. continuar o fluxo.
-
-## O que este POC não valida
-
-Este teste não valida ainda:
-
-- Trello ou outro Task Source;
-- AI Memory;
-- QA;
-- Planner;
-- branches/worktrees;
-- múltiplos Developers;
-- troca Codex/Claude;
-- automação de bootstrap.
-
-Ele valida somente o fundamento:
-
-**sessões Codex independentes, visíveis em terminais diferentes, trocando tarefas e resultados pelo App Server usando `codex queue`.**
+O teste confirma o transporte entre sessões. Ele não valida a integração do Task Source, AI Memory, QA, branches/worktrees, vários workers ou troca de CLI.

@@ -1,169 +1,73 @@
-# Protocolo entre agentes
+# Protocolo entre sessões
 
 ## Objetivo
 
-Padronizar a troca de trabalho entre Orchestrator e workers sem transportar contexto excessivo.
+Definir o conteúdo mínimo de uma delegação e de um resultado. O transporte depende da CLI configurada.
 
-O protocolo define **o conteúdo** das mensagens. O transporte depende da CLI utilizada.
-
-No Codex, o POC validado usa:
-
-- `codex app-server`;
-- `codex queue`;
-- uma sessão por papel conectada ao mesmo App Server.
-
-O Task Source não é canal de comunicação entre agentes.
+No Codex, o transporte validado usa sessões conectadas ao mesmo codex app-server e codex queue. Trello e outros Task Sources não são canais de comunicação.
 
 ## Handoff
 
-Toda delegação deve conter no mínimo:
+Toda delegação informa:
 
-- Task ID;
-- objetivo;
-- escopo;
-- critérios de aceite;
-- restrições;
-- evidências esperadas;
-- referências necessárias;
-- sessão para retorno.
+- TASK: identificador da tarefa;
+- INSTRUCTION: objetivo, escopo, critérios e restrições;
+- RETURN_TO: sessão do Orchestrator para receber o resultado.
 
-Use `templates/handoff.md`.
+Use templates/handoff.md quando a tarefa precisar de referências, contexto ou critérios detalhados.
 
-No Codex, o Orchestrator envia o handoff ao worker usando `codex queue`.
+Exemplo:
+
+    TASK: COMM-001
+    INSTRUCTION: Confirme o recebimento. Não crie nem altere arquivos.
+    RETURN_TO: orchestrator-poc
 
 ## Resultado
 
-Todo worker deve responder ao Orchestrator pelo mesmo canal de comunicação usado para receber a tarefa.
+Todo worker responde pelo mesmo canal usado para receber a tarefa. O formato mínimo é:
 
-O resultado deve conter:
+    STATUS: DONE
+    TASK: COMM-001
+    SUMMARY: Confirmei o recebimento da tarefa.
+    EVIDENCE: A mensagem foi recebida; nenhum arquivo foi alterado.
 
-- status;
-- Task ID;
-- resumo;
-- mudanças realizadas;
-- validações executadas;
-- evidências;
-- riscos ou pendências;
-- memória sugerida, se houver;
-- recomendação do próximo passo.
+STATUS aceita DONE, PARTIAL, BLOCKED, FAILED ou NEEDS_REVIEW.
 
-Use `templates/result.md`.
+Acrescente informações quando forem relevantes:
 
-## Status do protocolo
+- CHANGES: arquivos e mudanças realizadas;
+- VALIDATION: comandos/testes e resultado;
+- RISKS: riscos ou pendências;
+- NEXT_STEP: próxima ação recomendada;
+- MEMORY_CANDIDATE: conhecimento durável sugerido;
+- GIT: branch e commit, quando aplicável.
 
-Valores sugeridos:
+Use templates/result.md para o formato completo. Seja breve, mas inclua evidências verificáveis.
 
-- `DONE`
-- `PARTIAL`
-- `BLOCKED`
-- `FAILED`
-- `NEEDS_REVIEW`
+## Transporte Codex
 
-## Comportamento assíncrono
+Inicie um codex app-server e conecte as sessões participantes ao mesmo endpoint. Para entregar uma mensagem:
 
-Depois de delegar uma tarefa, o Orchestrator:
+    codex queue --remote ws://127.0.0.1:4500 --thread developer-poc --message 'TASK: COMM-001
+    INSTRUCTION: Confirme o recebimento. Não altere arquivos.
+    RETURN_TO: orchestrator-poc'
 
-- não executa a tarefa delegada;
-- não verifica arquivos para descobrir se o worker terminou;
-- não faz polling da sessão do worker;
-- encerra seu turno e aguarda uma mensagem de retorno.
+Uma resposta de fila confirma que a mensagem foi aceita pelo App Server. O encerramento da tarefa é confirmado pelo resultado recebido na sessão de destino.
 
-Quando o worker termina, ele envia o resultado ao Orchestrator pelo canal de comunicação entre sessões.
+## Nome e identificação da sessão
 
-No Codex:
+- Use /rename no Codex para atribuir nomes claros e distintos às sessões, por exemplo orchestrator-poc e developer-poc.
+- Tente primeiro o nome exato com codex queue.
+- Se o Codex retornar um UUID correspondente à sessão, repita o envio usando esse UUID.
+- Use somente um UUID confirmado para a sessão de destino. Nunca escolha entre sessões ambíguas por tentativa.
+- Se não houver nome único nem UUID confirmado, marque BLOCKED e informe o que falta.
 
-```text
-Orchestrator
-    |
-    | codex queue
-    v
-Developer
-    |
-    | execução
-    | codex queue
-    v
-Orchestrator
-```
+O envio ao worker não substitui o resultado do worker. Depois de delegar, o Orchestrator encerra o turno e aguarda a resposta pelo canal; não faz polling nem inspeciona arquivos para inferir conclusão.
 
-## Resolução de sessão no Codex
+## Bloqueios
 
-Prefira nomes de sessão específicos, por exemplo:
+Quando não puder prosseguir, envie BLOCKED com:
 
-```text
-orchestrator-poc
-developer-poc
-qa-poc
-```
-
-Se `codex queue` não conseguir confirmar a unicidade do nome, a sessão emissora deve usar o UUID informado pelo próprio Codex e repetir o envio.
-
-O usuário não deve precisar copiar UUIDs entre sessões.
-
-Se houver múltiplas sessões realmente candidatas e não for possível determinar a correta, não escolher aleatoriamente.
-
-## Regras
-
-### Contexto mínimo
-
-Não envie o histórico inteiro da sessão para outro agente.
-
-Envie somente:
-
-- objetivo;
-- arquivos ou áreas relevantes;
-- decisões já tomadas;
-- critérios;
-- restrições;
-- links necessários.
-
-### Evidência
-
-Um resultado não deve ser apenas “feito”.
-
-Sempre que aplicável, inclua:
-
-- testes executados;
-- arquivos modificados;
-- commit/branch;
-- reprodução do bug;
-- saída relevante;
-- screenshot;
-- link de PR.
-
-### Bloqueios
-
-Ao bloquear:
-
-1. descreva o bloqueio;
-2. diga o que já foi tentado;
-3. diga qual informação ou ação destrava;
-4. evite continuar inventando requisitos;
-5. envie o status `BLOCKED` ao Orchestrator pelo canal de comunicação.
-
-### Memória sugerida
-
-Workers podem sugerir fatos para memória durável.
-
-O Orchestrator ou uma política futura decide se a informação deve realmente ser persistida.
-
-## Exemplo
-
-```text
-Orchestrator
-  -> Developer: TSK-42 via canal de comunicação
-
-Developer
-  -> Orchestrator: DONE + arquivos + testes + risco
-
-Orchestrator
-  -> QA: validar TSK-42 via canal de comunicação
-
-QA
-  -> Orchestrator: resultado + evidências
-
-Orchestrator
-  -> Task Source: atualizar status
-  -> AI Memory: persistir decisão durável, se houver
-```
-
-Para reproduzir o POC Codex passo a passo, consulte [CODEX-QUEUE-POC.md](CODEX-QUEUE-POC.md).
+1. o que impediu a execução;
+2. o que foi tentado;
+3. qual informação ou ação destrava o trabalho.
