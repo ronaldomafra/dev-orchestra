@@ -4,7 +4,7 @@
 
 Validar uma troca de mensagens entre duas sessões Codex independentes usando o mesmo App Server. O worker recebe uma tarefa e envia a confirmação ao Orchestrator sem o usuário copiar mensagens entre terminais.
 
-Esta etapa valida somente o canal. Não usa Trello, QA ou AI Memory.
+Este roteiro isolado valida somente o canal, sem depender de Trello, QA ou AI Memory. É um diagnóstico opcional; o caminho principal está no [Quick Start](../README.md#quick-start-um-card-dois-agentes), que inclui Trello e AI Memory desde o início. Não é necessário abrir terminais adicionais de POC para executar aquele tutorial.
 
 ## Requisitos
 
@@ -20,7 +20,7 @@ Confira a CLI e o comando:
 
 ## 1. Inicie o App Server
 
-Em um terminal dedicado:
+Confira primeiro os endpoints abaixo. Se o App Server esperado já estiver ativo, reutilize-o; não inicie outro na mesma porta. Caso não haja serviço ativo, em um terminal dedicado:
 
     codex app-server --listen ws://127.0.0.1:4500
 
@@ -76,7 +76,7 @@ Depois de receber a tarefa, o Developer envia:
 
 O Codex aceita o nome exato da sessão ou seu UUID como valor de thread. Use /rename para dar nomes distintos e tente o nome exato primeiro. Se o Codex retornar o UUID correspondente, repita o envio usando esse UUID. Não escolha uma sessão ambígua por tentativa.
 
-Na validação local, o envio pelo UUID da sessão foi aceito. Se o nome não resolver e o Codex não fornecer uma identificação segura, informe o bloqueio; não adivinhe nem inspecione processos de outros agentes para encontrar um destino.
+Use `/status` dentro da sessão de destino para obter seu Session UUID. O `RETURN_TO` é o UUID ou nome único do Orchestrator, não do worker. Na validação local, o envio pelo UUID da sessão foi aceito. Se o nome não resolver e o Codex não fornecer uma identificação segura, informe o bloqueio; não adivinhe nem inspecione processos de outros agentes para encontrar um destino.
 
 ## Critério de sucesso
 
@@ -103,3 +103,25 @@ O perfil deve aparecer carregado e o comando de sandbox deve terminar sem erro. 
 ## Limite do POC
 
 O teste confirma o transporte entre sessões. Ele não valida a integração do Task Source, AI Memory, QA, branches/worktrees, vários workers ou troca de CLI.
+
+<a id="historico-local-preservado"></a>
+
+## Histórico local preservado
+
+As evidências a seguir descrevem o ambiente do POC, não uma garantia para toda instalação. Registros locais consolidados em 2026-09-23:
+
+| Verificação | Evidência e limite |
+| --- | --- |
+| App Server | Iniciou e respondeu HTTP 200 em `/readyz` e `/healthz` |
+| Sandbox Ubuntu | `codex sandbox /bin/true` terminou sem erro após carregar o perfil AppArmor descrito acima |
+| COMM-001 | Worker recebeu e devolveu confirmação via `codex queue` ao UUID do Orchestrator, sem alterar arquivos |
+| COMM-002 | Confirmação devolvida pelo canal, sem alterar arquivos, conforme histórico fornecido; não há ID de mensagem adicional neste registro |
+| COMM-003 | Nome `desenvolvedor-novo` falhou na delegação; UUID confirmado funcionou; retorno chegou pelo canal sem alterações em arquivos |
+| Workstream `developer` | `linked_harnesses` continha `codex`; comprova associação, não retomada completa |
+| Workstream `developer_new` | Sem harness vinculado; não é evidência de continuidade |
+
+No COMM-003, o retorno foi aceito como mensagem `01a0d0b9-9444-7f82-a3f2-f7ea463cd633`, destinada ao Orchestrator `01a0cfff-2d85-7213-85fe-5004dfb842ea`. Esses identificadores são históricos; não os reutilize no tutorial. Obtenha os UUIDs das suas sessões por `/status`.
+
+O título Codex `desenvolvedor` também foi usado com a chave AI Memory `developer`. O erro `managed workstream not found` ao selecionar `desenvolvedor` decorre dessa distinção. Na retomada, use a chave original; não acrescente `resume <UUID>` depois de `codex --remote` no caminho gerenciado.
+
+A integração completa Trello + AI Memory, a recuperação de conhecimento durável e a retomada gerenciada ainda não possuem evidência de validação de ponta a ponta neste registro. O [SETUP](SETUP.md#verificar-memoria-e-continuidade) descreve verificações separadas de vínculo, continuidade e memória.

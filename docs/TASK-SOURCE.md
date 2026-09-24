@@ -2,58 +2,60 @@
 
 ## Papel
 
-Task Source é a abstração para a ferramenta que guarda backlog e estado operacional. Trello é o primeiro adapter documentado; o processo não depende de uma plataforma específica.
+Task Source é a ferramenta que guarda backlog e estado operacional: o que precisa ser feito e em que estado está. Trello é o exemplo conectado por MCP no primeiro fluxo. Dev Orchestra define o contrato; este repositório não fornece um runtime de integração nem adapters implementados para outros serviços.
 
-O Task Source responde a duas perguntas: o que precisa ser feito e em que estado está?
+## Campos da tarefa
 
-## Campos úteis
+Toda tarefa delegada precisa de identificador, título, objetivo, escopo, critérios de aceite e referência identificável. Status, prioridade, dependências e rótulos ajudam a seleção. Campos específicos variam por ferramenta.
 
-Uma tarefa pode incluir:
-
-- identificador e título;
-- descrição e critérios de aceite;
-- status e prioridade;
-- dependências, rótulos e referências;
-- metadados próprios do adapter.
-
-Nem toda plataforma precisa suportar todos os campos.
+O exemplo inicial é **DEMO-001: Meu primeiro fluxo**, com URL de card real e critérios completos no [README](../README.md#3-criar-a-tarefa-no-trello). O arquivo de demonstração será criado quando o leitor executar o fluxo.
 
 ## Responsabilidades
 
-No fluxo inicial, o Orchestrator é responsável por:
+O Orchestrator consulta tarefas, considera dependências, registra início e conclusão e mantém o backlog coerente com as evidências recebidas. Workers recebem handoffs e retornam resultados pelo canal entre sessões; acesso eventual ao backlog não os autoriza a mudar o status.
 
-- consultar tarefas elegíveis;
-- selecionar trabalho e considerar dependências;
-- registrar início, validação e conclusão;
-- anexar referências e evidências;
-- manter o estado do backlog coerente com o resultado recebido.
-
-Workers trabalham a partir do handoff. Seu acesso direto ao backlog é opcional e não os autoriza a mudar o status sem regra explícita.
-
-## O que o Task Source não é
-
-- canal de comunicação entre sessões;
-- fila de mensagens;
-- memória técnica durável;
-- repositório de código ou documentação completa.
-
-Handoffs e resultados passam pelo canal configurado para a CLI. Conhecimento durável vai para AI Memory ou para documentação versionada, conforme o caso.
-
-## Indisponibilidade
-
-Se o Task Source não estiver acessível, informe o bloqueio e não invente tarefas ou estados. Continue somente se o usuário ou o Orchestrator já forneceu a tarefa explicitamente. Não afirme que o backlog foi atualizado quando a integração falhou.
+O Task Source não transporta handoffs/resultados nem substitui memória durável ou Git. Registre nele um resumo e referências às evidências; mantenha os artefatos no repositório e decisões reutilizáveis na fonte apropriada.
 
 ## Trello
 
-Mapeamento inicial sugerido:
-
-| Trello | Task Source |
+| Trello | Uso no primeiro fluxo |
 | --- | --- |
-| Board | Espaço do projeto |
-| List | Estado da tarefa |
-| Card | Tarefa |
-| Labels | Prioridade ou tipo |
-| Checklist | Critérios ou subtarefas |
-| Comments e links | Histórico resumido e evidências |
+| Workspace autorizado | Escopo de acesso da conexão MCP |
+| Board | Projeto de demonstração, identificado por URL |
+| Listas | Backlog, Em execução, Concluído |
+| Card | DEMO-001, identificado por título e URL |
+| Descrição | Objetivo, critérios e resumo de evidências preservando o texto original |
 
-A URL MCP documentada para o adapter Trello é https://mcp.trello.com/v1. Consulte a configuração atual da sua CLI e do serviço antes de conectar.
+Configure antes de iniciar o App Server:
+
+```bash
+codex mcp add trello --url https://mcp.trello.com/v1
+```
+
+Complete o OAuth e, se necessário, execute `codex mcp login trello`. Verifique o cadastro com `codex mcp list` e depois confirme o acesso real lendo board e card pela sessão Orchestrator. A [instalação completa](SETUP.md#trello) explica a sequência.
+
+A [fonte oficial Trello MCP](https://support.atlassian.com/trello/docs/connect-trello-to-ai-assistants-with-trello-mcp/), consultada em 2026-09-23, documenta leitura, criação, atualização e movimentação de cards. Comentários e anexos constam como recursos futuros. Por isso, acrescente à descrição do card uma seção de resultado, sem apagar objetivo e critérios. Não dependa de comentários/anexos MCP para concluir o tutorial.
+
+Exemplo de resumo a registrar **somente após o resultado real**:
+
+```text
+Resultado DEMO-001:
+- Artefato: docs/demo/primeiro-fluxo.md
+- Conteúdo lido e comparado com os critérios: <resultado real>
+- git status --short --untracked-files=all: <saída real pertinente>
+- Resultado recebido do Developer pelo canal: <referência disponível>
+- Avaliação dos critérios pelo Orchestrator: <conclusão e pendências>
+- Commit: não realizado neste tutorial.
+```
+
+Após atualizar a descrição e mover para Concluído, leia o card novamente para confirmar lista e conteúdo. Se uma operação falhar, informe exatamente a pendência; não declare sucesso com base apenas na intenção de atualizar.
+
+## Outro serviço via MCP
+
+Você pode usar um servidor MCP existente ou desenvolver seu próprio conector. Defina o mapeamento entre projeto, tarefa, estado, critérios e evidências; forneça configuração/autenticação para a CLI e verifique operações reais de leitura e atualização. Informe ao Orchestrator como identificar tarefas sem ambiguidade.
+
+A troca de serviço preserva responsabilidades e protocolo entre sessões. Não exige reescrever os papéis, mas exige validar o conector escolhido. A existência de um contrato Task Source não comprova que um adapter específico já esteja implementado aqui.
+
+## Indisponibilidade
+
+Informe falhas de autenticação, autorização ou serviço sem inventar tarefas ou estados. Continue somente quando houver tarefa explicitamente fornecida pelo usuário ou Orchestrator. Se a execução local terminar e a atualização do backlog falhar, reporte ambas as condições: artefato pronto, sincronização pendente. Nunca afirme que o card foi atualizado sem retorno real.

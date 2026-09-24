@@ -23,6 +23,12 @@ Uma pergunta prática para avaliar memória durável:
 
 Se sim, registre a decisão ou aprendizado na fonte apropriada.
 
+## Política do projeto e captura técnica
+
+As regras acima orientam a seleção de conhecimento durável feita pelos agentes. Os hooks do AI Memory também podem capturar prompts, chamadas de ferramentas e eventos de sessão conforme a versão e a configuração da ferramenta. A política não é uma afirmação de que a captura automática exclui todos os logs transitórios. Revise as [regras oficiais de tratamento de dados](https://github.com/akitaonrails/ai-memory/blob/main/DATA_HANDLING.md) para configurar essa captura.
+
+Um vínculo `linked_harnesses: ["codex"]` mostra associação entre workstream e CLI. Retomar o mesmo UUID e recuperar um marcador demonstra continuidade da sessão. Recuperar uma decisão em sessão independente mediante consulta MCP demonstra acesso ao conhecimento durável. Essas evidências não são intercambiáveis; veja [como verificá-las](SETUP.md#verificar-memoria-e-continuidade).
+
 ## Portabilidade
 
 O histórico de uma CLI é temporário. Regras e contratos ficam no Git; conhecimento durável fica em AI Memory; estado de trabalho fica no Task Source. Assim, outra sessão ou CLI pode retomar o trabalho sem depender de uma conversa específica.
