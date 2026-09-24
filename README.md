@@ -1,6 +1,6 @@
 # Dev Orchestra
 
-Dev Orchestra é um processo e um conjunto de contratos para organizar desenvolvimento assistido por IA: um backlog, agentes com papéis explícitos, comunicação entre sessões, memória durável e Git. Você combina ferramentas existentes e acompanha a execução em sessões independentes, visíveis em terminais separados. Este repositório fornece os contratos e guias; não há um runtime ou instalador próprio do Dev Orchestra.
+Dev Orchestra é um processo e um conjunto de contratos para organizar desenvolvimento assistido por IA. Ele separa a coordenação da execução e registra o trabalho em fontes distintas: backlog, memória durável, repositório e contexto temporário da sessão. Você combina ferramentas existentes e acompanha a execução em sessões independentes, cada uma aberta em seu próprio terminal. Este repositório fornece os contratos e guias; não há um runtime ou instalador próprio do Dev Orchestra.
 
 ## Dos post-its às sessões coordenadas
 
@@ -8,7 +8,7 @@ A ideia nasceu de uma rotina real: bugs, melhorias e features eram anotados em p
 
 Daí veio a pergunta: por que não conectar o Trello ao agente? A experiência com a integração agradou e abriu espaço para o próximo passo: um Orchestrator que consulta o backlog, delega e recebe resultados de outras sessões. A escolha foi tornar esse trabalho observável em outros terminais, em vez de concentrar tudo em uma única sessão com subagentes.
 
-Cada sessão tem um papel e um canal de retorno. A pessoa desenvolvedora acompanha as trocas e continua responsável pelas decisões críticas de produto, arquitetura e risco.
+Cada sessão é uma conversa independente com instruções e contexto próprios. Por isso o Orchestrator envia ao worker uma tarefa explícita e um endereço de retorno, em vez de presumir que as duas sessões compartilham o histórico. Terminais separados deixam esse trabalho visível para a pessoa desenvolvedora, que acompanha as trocas e continua responsável pelas decisões críticas de produto, arquitetura e risco.
 
 ![Arquitetura do Dev Orchestra](docs/assets/dev-orchestra-architecture.webp)
 
@@ -41,6 +41,8 @@ O Orchestrator lê o card, registra o início e delega pelo canal entre sessões
 | Git | Versiona código, documentação, contratos e evidências |
 | Sessão | Mantém o contexto temporário da execução |
 
+**Task Source** é o serviço de backlog; **worker** é uma sessão que executa uma tarefa delegada; e **MCP** é o protocolo usado para conectar ferramentas externas à CLI do agente. No exemplo, Trello é o Task Source e Developer é o worker. O [modelo de contexto](docs/CONTEXT-MODEL.md) explica onde cada tipo de informação fica.
+
 Memória recuperada é dado histórico, não instrução vigente. A política do projeto orienta o que promover a conhecimento durável; os hooks do AI Memory também podem capturar eventos técnicos de sessões. São responsabilidades diferentes, descritas no [modelo de contexto](docs/CONTEXT-MODEL.md).
 
 ## Maturidade
@@ -49,7 +51,9 @@ O transporte Codex entre sessões e o sandbox local foram validados. O App Serve
 
 ## Quick Start: um card, dois agentes
 
-O caminho principal usa **Linux/Ubuntu + Codex + AI Memory + Trello**. Você precisa de Git, curl, Docker acessível pelo seu usuário, autenticação no Codex, conta Trello e navegador para OAuth. Reserve três terminais: App Server, Orchestrator e Developer. Os comandos de preparação podem ser executados antes nesses mesmos terminais.
+O caminho principal usa **Linux/Ubuntu + Codex + AI Memory + Trello**. Você precisa de Git, curl, Docker acessível pelo seu usuário, autenticação no Codex, conta Trello e navegador para OAuth. Reserve três terminais: um mantém o App Server aberto; os outros dois hospedam as sessões Orchestrator e Developer. Os comandos de preparação podem ser executados antes nesses mesmos terminais. Em cada etapa, os comandos marcados como shell são executados no terminal; `/rename` e `/status` são digitados dentro da sessão Codex.
+
+O percurso é: preparar as ferramentas ([SETUP](docs/SETUP.md)), criar o card, abrir o App Server e as duas sessões, e então pedir ao Orchestrator que execute o card. A tabela em [Observar e conferir a conclusão](#8-observar-e-conferir-a-conclusão) mostra as evidências que confirmam cada fase. Não é necessário executar o POC isolado para seguir este caminho.
 
 ### 1. Instalar e preparar o checkout
 
@@ -159,8 +163,10 @@ Primeira criação:
 
 ```bash
 cd "$HOME/dev-orchestra-demo"
-ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500
+ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
 ```
+
+Sol com raciocínio médio é uma recomendação inicial para coordenar o primeiro fluxo. Os modelos disponíveis dependem da conta e da versão da CLI; confira a escolha efetiva em `/status`. Se o modelo não estiver disponível, peça ao Orchestrator uma alternativa antes de continuar.
 
 Dentro do Codex, digite `/rename orchestrator`. Depois envie:
 
@@ -171,29 +177,57 @@ Developer para iniciar. O canal é codex queue no endpoint
 ws://127.0.0.1:4500. Após delegar, encerre o turno e aguarde o resultado.
 ```
 
-Digite `/status` e anote o **Session UUID do Orchestrator**. Esse é o destino `RETURN_TO` dos resultados, não o UUID do Developer.
+Digite `/status` e anote o **Session UUID do Orchestrator**. Esse é o destino `RETURN_TO` dos resultados, não o UUID do Developer. Confira também o modelo e o esforço de raciocínio efetivos.
 
-### 6. Terminal do Developer
+Com o Orchestrator aberto, peça que ele escolha a configuração da sessão de execução e gere o comando e o prompt completos. Por exemplo:
 
-Primeira criação, no mesmo checkout:
+```text
+Preciso de uma sessão Developer para executar DEMO-001: criar o arquivo
+Markdown docs/demo/primeiro-fluxo.md com o conteúdo e critérios do card.
+Escolha um modelo e nível de raciocínio adequados à complexidade e ao
+consumo, justifique brevemente e forneça: comando de criação com AI Memory,
+nome sugerido, prompt completo da sessão e comando de retomada. Eu abrirei
+a sessão no outro terminal. Use o mesmo App Server e indique como destino
+de retorno o Session UUID do Orchestrator confirmado em /status.
+```
+
+Para esta tarefa curta e delimitada, uma resposta inicial adequada é Luna com raciocínio médio. Ela deve fornecer um comando equivalente ao abaixo e um prompt que substitua `<UUID confirmado do Orchestrator>` pelo valor real obtido em `/status`:
 
 ```bash
 cd "$HOME/dev-orchestra-demo"
-ai-memory run --new developer codex --remote ws://127.0.0.1:4500
+ai-memory run --new developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
 ```
 
-Dentro do Codex, digite `/rename developer`. Depois envie:
+Na resposta do Orchestrator, o comando de retomada correspondente deve trocar `--new developer` por `--workstream developer`, mantendo o restante, inclusive modelo e esforço:
+
+```bash
+ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
+```
+
+Dentro da nova sessão, use `/rename developer` e envie:
 
 ```text
-Leia AGENTS.md, roles/developer.md e docs/PROTOCOL.md.
-Assuma o papel de Developer e aguarde um handoff do Orchestrator.
-Execute somente o escopo recebido. Verifique o resultado e envie-o
-pela ferramenta codex queue no endpoint ws://127.0.0.1:4500 ao RETURN_TO
-informado, com STATUS, TASK, SUMMARY e EVIDENCE. Não basta imprimir o
-resultado nesta sessão; envie autonomamente. Não altere o Trello.
+Leia AGENTS.md, roles/developer.md e docs/PROTOCOL.md. Assuma o papel
+Developer. Execute DEMO-001: crie somente docs/demo/primeiro-fluxo.md,
+com UTF-8 e uma quebra de linha final. O conteúdo deve ser exatamente:
+# Meu primeiro fluxo
+
+- Task Source: mantém o backlog e o estado operacional das tarefas.
+- Orchestrator: coordena o trabalho e atualiza o backlog com evidências.
+- Developer: executa a tarefa recebida e devolve o resultado ao Orchestrator.
+Crie somente esse artefato; preserve mudanças existentes e reporte conflito
+antes de sobrescrever se o arquivo já existir. Leia o arquivo e execute
+git status --short --untracked-files=all. Não faça commit nem push e não
+altere o Trello. Envie autonomamente um resultado com STATUS, TASK, SUMMARY
+e EVIDENCE via codex queue, usando o endpoint ws://127.0.0.1:4500 e
+RETURN_TO <UUID confirmado do Orchestrator>.
 ```
 
-Digite `/status` e anote o **Session UUID do Developer**. Use o nome exato `developer` se for único e resolvível; o UUID confirmado é o fallback. Não escolha entre sessões ambíguas por tentativa. Não é necessário abrir uma sessão extra para testar o transporte.
+`/status` na sessão nova confirma modelo e esforço efetivos. Se Luna não estiver disponível, peça uma alternativa ao Orchestrator; não invente uma flag de seleção.
+
+### 6. Abrir e confirmar o Developer
+
+No terminal próprio, execute o comando de criação que o Orchestrator forneceu (o exemplo para DEMO-001 está na etapa anterior). Na sessão Codex recém-aberta, use `/rename developer` e envie o prompt completo recebido. Em `/status`, confira o modelo/esforço efetivos e anote o **Session UUID do Developer**. Use o nome exato `developer` se for único e resolvível; o UUID confirmado é o fallback. Não escolha entre sessões ambíguas por tentativa. Não é necessário abrir uma sessão extra para testar o transporte.
 
 ### 7. Pedir a execução ao Orchestrator
 
@@ -262,18 +296,20 @@ Em um checkout limpo, o status deve incluir `?? docs/demo/primeiro-fluxo.md`. Mu
 
 Use `--new` apenas na primeira criação. Depois que a instância anterior daquele workstream encerrar, retome no mesmo checkout, com uma instância ativa por workstream.
 
+As configurações abaixo são recomendações iniciais para o fluxo do tutorial; modelo é escolhido conforme a tarefa, não é fixo do papel. Confira modelo e esforço efetivos em `/status`; se não estiverem disponíveis, peça uma alternativa ao Orchestrator.
+
 Terminal Orchestrator:
 
 ```bash
 cd "$HOME/dev-orchestra-demo"
-ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500
+ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
 ```
 
 Terminal Developer:
 
 ```bash
 cd "$HOME/dev-orchestra-demo"
-ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500
+ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
 ```
 
 O App Server deve estar disponível no mesmo endpoint. As opções AI Memory ficam antes de `codex`; `--remote` fica depois. No caminho gerenciado, não acrescente `resume <UUID>`: o AI Memory seleciona a sessão vinculada. `/rename` altera o título Codex, não a chave do workstream. Se a chave é `developer`, usar `--workstream desenvolvedor` resulta em `managed workstream not found`, mesmo que esse seja o título da sessão.
@@ -287,6 +323,8 @@ ai-memory workstreams --json
 `linked_harnesses` contendo `codex` comprova um vínculo, não a retomada completa ou memória durável. Teste **continuidade da sessão** registrando um marcador único na conversa e seu UUID por `/status`, encerrando a instância, retomando com `--workstream` e conferindo o mesmo UUID e a recuperação do marcador.
 
 Teste **conhecimento durável** separadamente: registre uma decisão útil pelo MCP AI Memory com fonte e escopo do projeto; em uma sessão independente, peça uma busca explícita pelo MCP e confira a decisão, sua origem e relevância. Não use o marcador transitório como conhecimento durável. O [guia de instalação](docs/SETUP.md#verificar-memoria-e-continuidade) detalha as evidências; a [fonte oficial de workstreams](https://github.com/akitaonrails/ai-memory/blob/main/docs/managed-workstreams.md) explica a seleção gerenciada.
+
+Tokens usados como contexto não equivalem automaticamente a custo ou cota: esses limites dependem do plano e das regras de uso do Codex. Envie no handoff somente a tarefa, critérios, referências e evidências necessárias e peça um retorno curto. Aumente modelo ou esforço quando houver dificuldade ou risco real. Estas são recomendações iniciais, não benchmarks nem garantias. Consulte [preços e limites do Codex](https://learn.chatgpt.com/docs/pricing) para sua conta.
 
 ## Expandir e adotar em um projeto existente
 

@@ -2,21 +2,23 @@
 
 ## Preparar as sessões
 
-O [Quick Start](../README.md#quick-start-um-card-dois-agentes) começa com Orchestrator e Developer, em terminais separados e no mesmo checkout de demonstração. Prepare ferramentas, hooks e MCPs pelo [SETUP](SETUP.md) antes de iniciar o App Server. Use Trello desde a primeira tarefa; o POC isolado de comunicação é diagnóstico opcional.
+O [Quick Start](../README.md#quick-start-um-card-dois-agentes) começa com Orchestrator e Developer, em terminais separados e no mesmo checkout de demonstração. O terceiro terminal mantém o App Server, serviço local ao qual as sessões se conectam para trocar mensagens. Prepare ferramentas, hooks e MCPs pelo [SETUP](SETUP.md) antes de iniciar esse serviço. Use Trello desde a primeira tarefa; o POC isolado de comunicação é diagnóstico opcional.
 
 Cada sessão lê [AGENTS.md](../AGENTS.md), exatamente o seu papel em [roles/](../roles/) e o [protocolo](PROTOCOL.md). A pessoa desenvolvedora fornece URLs do board/card e destinos confirmados. O Orchestrator coordena; o worker executa.
 
 Primeira criação, no terminal Orchestrator, a partir da raiz do checkout:
 
 ```bash
-ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500
+ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
 ```
 
 Primeira criação, no terminal Developer, na mesma raiz:
 
 ```bash
-ai-memory run --new developer codex --remote ws://127.0.0.1:4500
+ai-memory run --new developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
 ```
+
+Sol/medium é a recomendação inicial para coordenar o fluxo do tutorial. Esta escolha é um ponto de partida; selecione por tarefa e confirme o modelo e esforço ativos em `/status`. Se indisponível, peça ao Orchestrator uma opção existente para sua conta.
 
 Use `/rename orchestrator` e `/rename developer` dentro das respectivas sessões. `/status` informa o Session UUID: registre o UUID de cada destino, incluindo o Orchestrator em `RETURN_TO`. O título Codex e a chave do workstream AI Memory são conceitos distintos.
 
@@ -49,14 +51,16 @@ Se adicionar QA, pode adotar **Em validação** entre execução e conclusão. S
 Encerre a instância anterior antes de retomar: há uma instância ativa por workstream. No terminal Orchestrator, na raiz original:
 
 ```bash
-ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500
+ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
 ```
 
 No terminal Developer, na mesma raiz:
 
 ```bash
-ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500
+ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
 ```
+
+Essa configuração é apropriada como ponto de partida para coordenar o primeiro fluxo.
 
 Use `--new` somente para uma nova linha de trabalho. Opções AI Memory vêm antes de `codex`, opções nativas depois. Não acrescente `resume <UUID>` ao caminho gerenciado. `/rename` não muda a chave `developer`; `--workstream desenvolvedor` não a encontrará.
 
@@ -69,8 +73,10 @@ Confira vínculos com `ai-memory workstreams --json`, mas valide separadamente c
 Adicione somente o papel necessário, em seu próprio terminal/workstream. Para QA, na raiz do projeto:
 
 ```bash
-ai-memory run --new qa codex --remote ws://127.0.0.1:4500
+ai-memory run --new qa codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
 ```
+
+Luna/medium é uma recomendação inicial para revisar critérios e evidências de uma tarefa pequena. Para retomadas QA, mantenha a mesma escolha no comando com `--workstream qa`.
 
 Dentro do Codex, use `/rename qa` e envie:
 
@@ -83,8 +89,10 @@ resultado pelo codex queue ao RETURN_TO informado, sem alterar o backlog.
 Para Planner, em outro terminal na raiz:
 
 ```bash
-ai-memory run --new planner codex --remote ws://127.0.0.1:4500
+ai-memory run --new planner codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="high"'
 ```
+
+Sol/high é uma recomendação inicial apenas para uma análise realmente complexa, como mapear dependências entre migração de dados, API e implantação coordenada. Para um plano curto, solicite ao Orchestrator uma opção de menor esforço. Nas retomadas, use a mesma configuração com `--workstream planner`.
 
 Use `/rename planner` e envie:
 
@@ -96,7 +104,19 @@ Devolva o resultado pelo codex queue ao RETURN_TO informado.
 
 Nas próximas aberturas, use `--workstream qa` ou `--workstream planner` em vez de `--new`, mantendo o restante do comando. Confirme os UUIDs com `/status` antes da delegação.
 
+Exemplos de retomada, mantendo as recomendações dos contextos acima:
+
+```bash
+# Revisão curta de critérios/evidências
+ai-memory run --workstream qa codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
+
+# Análise complexa de dependências de migração e implantação
+ai-memory run --workstream planner codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="high"'
+```
+
 Tester e outros especialistas exigem um contrato próprio: `roles/tester.md` não existe neste repositório. Defina missão, entrada, limites, critérios, evidências e retorno; revise a compatibilidade com AGENTS.md e só então abra uma sessão/workstream com esse papel. O nome de um terminal não cria um contrato.
+
+Para pedir uma sessão especializada ao Orchestrator, descreva objetivo, critérios e referências, peça modelo/esforço proporcionais à tarefa, justificativa curta, comando AI Memory de criação e retomada, nome sugerido e prompt completo. Peça para usar o mesmo App Server e retornar ao UUID do Orchestrator confirmado por `/status`; você abrirá a sessão no outro terminal. Para QA, Planner ou Developer, use o papel já existente e seu arquivo em `roles/`. Para Redator ou outro papel sem arquivo, peça um prompt que defina responsabilidades, entradas, limites, evidências e retorno, sem presumir que esse contrato já existe. Mantenha o handoff enxuto; tokens de contexto não são por si só a cota ou o custo, que dependem do plano e das regras vigentes ([preços e limites do Codex](https://learn.chatgpt.com/docs/pricing)). Aumente capacidade se aparecer dificuldade ou risco real, não por padrão.
 
 <a id="adotar-em-outro-repositorio"></a>
 

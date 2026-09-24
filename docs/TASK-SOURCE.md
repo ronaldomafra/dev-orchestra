@@ -2,7 +2,7 @@
 
 ## Papel
 
-Task Source é a ferramenta que guarda backlog e estado operacional: o que precisa ser feito e em que estado está. Trello é o exemplo conectado por MCP no primeiro fluxo. Dev Orchestra define o contrato; este repositório não fornece um runtime de integração nem adapters implementados para outros serviços.
+Task Source é o serviço que guarda backlog e estado operacional: o que precisa ser feito e em que estado está. Um servidor MCP (Model Context Protocol) permite que a CLI do agente consulte e altere ferramentas externas. Trello é o exemplo conectado dessa forma no primeiro fluxo. Dev Orchestra define as responsabilidades que o serviço precisa cumprir; este repositório não fornece um runtime de integração nem adapters implementados para outros serviços.
 
 ## Campos da tarefa
 
@@ -52,7 +52,7 @@ Após atualizar a descrição e mover para Concluído, leia o card novamente par
 
 ## Outro serviço via MCP
 
-Você pode usar um servidor MCP existente ou desenvolver seu próprio conector. Defina o mapeamento entre projeto, tarefa, estado, critérios e evidências; forneça configuração/autenticação para a CLI e verifique operações reais de leitura e atualização. Informe ao Orchestrator como identificar tarefas sem ambiguidade.
+Você pode conectar um serviço por meio de um servidor MCP já existente ou desenvolver seu próprio conector MCP. No segundo caso, o conector expõe ao agente as operações que o serviço oferece. Em ambos, defina o mapeamento entre projeto, tarefa, estado, critérios e evidências; configure autenticação e acesso para a CLI; e verifique operações reais de leitura e atualização. Informe ao Orchestrator como identificar tarefas sem ambiguidade.
 
 A troca de serviço preserva responsabilidades e protocolo entre sessões. Não exige reescrever os papéis, mas exige validar o conector escolhido. A existência de um contrato Task Source não comprova que um adapter específico já esteja implementado aqui.
 

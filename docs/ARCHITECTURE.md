@@ -16,7 +16,7 @@ Dev Orchestra organiza trabalho assistido por IA em torno de responsabilidades e
 | AI Memory | Preserva conhecimento durável entre sessões |
 | Git | Versiona código, documentação, contratos e evidências |
 
-Trello é o primeiro Task Source. Codex app-server + codex queue é o primeiro transporte validado. São ferramentas usadas para cumprir os contratos do processo. O repositório não implementa um runtime próprio nem adapters para outros Task Sources.
+Trello é o primeiro Task Source. Codex app-server + codex queue é o primeiro transporte validado: o App Server recebe conexões das sessões e `codex queue` entrega mensagens a uma sessão identificada. São ferramentas usadas para cumprir os contratos do processo. O repositório não implementa um runtime próprio nem adapters para outros Task Sources.
 
 ## Fluxo
 
@@ -48,4 +48,4 @@ O Orchestrator consulta o backlog e envia uma tarefa ao worker. O worker devolve
 
 O POC valida o canal entre sessões Codex. O primeiro fluxo documentado inclui Trello e AI Memory, com Orchestrator e Developer em terminais separados. A integração de ponta a ponta ainda precisa de validação; QA e Planner são extensões opcionais. Consulte o [Quick Start](../README.md#quick-start-um-card-dois-agentes) e o [histórico local](CODEX-QUEUE-POC.md#historico-local-preservado).
 
-O processo deve continuar portátil: responsabilidades ficam nos contratos do repositório; diferenças de ferramentas ficam nos adapters.
+O processo deve continuar portátil: responsabilidades ficam nos contratos do repositório; diferenças de ferramentas ficam nos adapters. Um serviço Task Source pode ser conectado por um servidor MCP já disponível ou por um conector MCP próprio, desde que as operações e estados necessários sejam configurados e validados. Este repositório ainda não fornece esses conectores alternativos; veja [Task Source](TASK-SOURCE.md#outro-servico-via-mcp).

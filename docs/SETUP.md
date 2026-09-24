@@ -203,17 +203,29 @@ Primeira criação, terminal Orchestrator:
 
 ```bash
 cd "$HOME/dev-orchestra-demo"
-ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500
+ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
 ```
 
 Primeira criação, terminal Developer:
 
 ```bash
 cd "$HOME/dev-orchestra-demo"
-ai-memory run --new developer codex --remote ws://127.0.0.1:4500
+ai-memory run --new developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
 ```
 
-Dentro das sessões, use `/rename orchestrator` e `/rename developer` respectivamente; carregue `AGENTS.md`, o papel correspondente e `docs/PROTOCOL.md`. Os [prompts do Quick Start](../README.md#5-terminal-do-orchestrator) já incluem espera e canal de retorno. Use `/status` para copiar o Session UUID de cada sessão e confira o destino antes de enviar mensagens.
+Para começar, siga o [Quick Start](../README.md#quick-start-um-card-dois-agentes), que contém os prompts, o pedido para o Orchestrator gerar o comando e o prompt do especialista e os critérios completos do card. Os comandos acima são recomendações iniciais coerentes com o guia: Sol/medium para coordenar e Luna/medium para executar o Markdown delimitado. Modelo depende da tarefa, não do nome do papel. Use `/status` para conferir o modelo e o esforço efetivos e copiar o Session UUID; se uma opção não estiver disponível, peça ao Orchestrator uma alternativa.
+
+Nas retomadas, mantenha as configurações explícitas e os mesmos workstream, checkout e endpoint:
+
+```bash
+# Terminal Orchestrator
+ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
+
+# Terminal Developer
+ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
+```
+
+Use a chave original após `--workstream`; `/rename` muda apenas o título visível. Não acrescente `resume <UUID>` ao caminho gerenciado. A disponibilidade e os limites variam por conta; veja a [referência de configuração de raciocínio](https://learn.chatgpt.com/docs/config-file/config-reference), a [comparação de modelos](https://developers.openai.com/api/docs/models/compare) e [preços e limites](https://learn.chatgpt.com/docs/pricing).
 
 Para workstreams existentes, siga os [comandos de retomada](../README.md#criar-e-retomar-sessoes): `--workstream` com a chave original e uma instância ativa por chave. `/rename` não renomeia workstreams; não adicione `resume <UUID>` ao comando gerenciado.
 
