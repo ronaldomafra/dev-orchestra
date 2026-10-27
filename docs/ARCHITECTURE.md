@@ -46,6 +46,6 @@ O Orchestrator consulta o backlog e envia uma tarefa ao worker. O worker devolve
 
 ## Escopo atual
 
-O POC valida o canal entre sessões Codex. O primeiro fluxo documentado inclui Trello e AI Memory, com Orchestrator e Developer em terminais separados. A integração de ponta a ponta ainda precisa de validação; QA e Planner são extensões opcionais. Consulte o [Quick Start](../README.md#quick-start-um-card-dois-agentes) e o [histórico local](CODEX-QUEUE-POC.md#historico-local-preservado).
+O POC valida o canal entre sessões Codex. O primeiro fluxo documentado inclui Trello e AI Memory, com Orchestrator e Developer em terminais separados. A integração de ponta a ponta está validada com Codex em uso real; a adaptação para o Claude Code está em andamento. QA e Planner são extensões opcionais. Consulte o [Quick Start](../README.md#quick-start-um-card-dois-agentes) e o [histórico local](CODEX-QUEUE-POC.md#historico-local-preservado).
 
 O processo deve continuar portátil: responsabilidades ficam nos contratos do repositório; diferenças de ferramentas ficam nos adapters. Um serviço Task Source pode ser conectado por um servidor MCP já disponível ou por um conector MCP próprio, desde que as operações e estados necessários sejam configurados e validados. Este repositório ainda não fornece esses conectores alternativos; veja [Task Source](TASK-SOURCE.md#outro-servico-via-mcp).

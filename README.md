@@ -47,7 +47,17 @@ Memória recuperada é dado histórico, não instrução vigente. A política do
 
 ## Maturidade
 
-O transporte Codex entre sessões e o sandbox local foram validados. O App Server é experimental na CLI consultada (`0.156.1`); não foi estabelecida uma versão mínima. O fluxo completo Trello + AI Memory e a retomada gerenciada ainda precisam de validação de ponta a ponta. O tutorial abaixo é o roteiro para essa validação, não uma afirmação de que ela já ocorreu. O [registro do POC](docs/CODEX-QUEUE-POC.md) separa evidências e pendências.
+O fluxo Orchestrator + Developer com Codex, Trello e AI Memory está validado e em uso real em um projeto pessoal (privado, por isso não é citado aqui).
+
+Resultados observados nesse uso, sem medição formal:
+
+- mais organização no backlog e no andamento das tarefas;
+- menor tempo de entrega e menor consumo de tokens;
+- planejamento melhor antes da implementação;
+- testes unitários mais específicos;
+- redução perceptível de alucinações: os agentes passaram a entender melhor o projeto.
+
+A adaptação para o Claude Code está em andamento. O App Server segue experimental na CLI consultada (`0.156.1`); não foi estabelecida uma versão mínima. O [registro do POC](docs/CODEX-QUEUE-POC.md) guarda as evidências do transporte entre sessões.
 
 ## Quick Start: um card, dois agentes
 
