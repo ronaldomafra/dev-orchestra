@@ -26,13 +26,17 @@ O Task Source não transporta handoffs/resultados nem substitui memória duráve
 | Card | DEMO-001, identificado por título e URL |
 | Descrição | Objetivo, critérios e resumo de evidências preservando o texto original |
 
-Configure antes de iniciar o App Server:
+Configure na CLI escolhida (no Codex, antes de iniciar o App Server):
 
 ```bash
+# Codex
 codex mcp add trello --url https://mcp.trello.com/v1
+
+# Claude Code
+claude mcp add --transport http trello https://mcp.trello.com/v1
 ```
 
-Complete o OAuth e, se necessário, execute `codex mcp login trello`. Verifique o cadastro com `codex mcp list` e depois confirme o acesso real lendo board e card pela sessão Orchestrator. A [instalação completa](SETUP.md#trello) explica a sequência.
+Complete o OAuth (Codex: `codex mcp login trello`; Claude Code: `/mcp` dentro da sessão). Verifique o cadastro com `codex mcp list` ou `claude mcp list` e depois confirme o acesso real lendo board e card pela sessão Orchestrator. A [instalação completa](SETUP.md#trello) explica a sequência.
 
 A [fonte oficial Trello MCP](https://support.atlassian.com/trello/docs/connect-trello-to-ai-assistants-with-trello-mcp/), consultada em 2026-09-23, documenta leitura, criação, atualização e movimentação de cards. Comentários e anexos constam como recursos futuros. Por isso, acrescente à descrição do card uma seção de resultado, sem apagar objetivo e critérios. Não dependa de comentários/anexos MCP para concluir o tutorial.
 
@@ -43,12 +47,15 @@ Resultado DEMO-001:
 - Artefato: docs/demo/primeiro-fluxo.md
 - Conteúdo lido e comparado com os critérios: <resultado real>
 - git status --short --untracked-files=all: <saída real pertinente>
-- Resultado recebido do Developer pelo canal: <referência disponível>
+- Modelo aprovado para o Developer: <MODEL / EFFORT>
+- Resultado recebido do Developer pelo transporte: <referência disponível>
 - Avaliação dos critérios pelo Orchestrator: <conclusão e pendências>
 - Commit: não realizado neste tutorial.
 ```
 
 Após atualizar a descrição e mover para Concluído, leia o card novamente para confirmar lista e conteúdo. Se uma operação falhar, informe exatamente a pendência; não declare sucesso com base apenas na intenção de atualizar.
+
+<a id="outro-servico-via-mcp"></a>
 
 ## Outro serviço via MCP
 

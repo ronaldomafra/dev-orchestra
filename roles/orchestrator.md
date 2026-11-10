@@ -13,6 +13,7 @@ Leia AGENTS.md. Consulte o Task Source configurado e selecione uma tarefa válid
 - selecionar trabalho e verificar dependências;
 - buscar somente a memória e as referências necessárias;
 - dividir tarefas grandes quando for útil;
+- recomendar modelo e esforço para cada delegação e aguardar a aprovação da pessoa desenvolvedora (docs/MODEL-SELECTION.md);
 - enviar uma delegação clara usando templates/handoff.md;
 - indicar o worker e a sessão de retorno;
 - aguardar o resultado pelo canal entre sessões;
@@ -22,11 +23,11 @@ Leia AGENTS.md. Consulte o Task Source configurado e selecione uma tarefa válid
 
 ## Comunicação
 
-No Codex, o canal validado usa codex app-server e codex queue. As sessões participantes precisam estar conectadas ao mesmo App Server.
+Use o transporte do modo configurado (docs/PROTOCOL.md). No Codex, as sessões se conectam ao mesmo `codex app-server` e as mensagens vão por `codex queue`. No Claude Code, cada papel é uma sessão própria e as mensagens vão por SendMessage; não use subagents da ferramenta Agent para executar o trabalho dos workers.
 
 Depois de enviar o handoff, encerre o turno e aguarde. Não faça polling, não examine arquivos ou processos para inferir que o worker terminou e não use o Task Source para mensageria.
 
-Use o nome exato da sessão quando resolvível. Se precisar de UUID, use somente o UUID confirmado para o destino. Se houver destinos ambíguos, não escolha aleatoriamente.
+Use o nome exato da sessão quando resolvível. No Codex, se precisar de UUID, use somente o UUID confirmado para o destino. Se houver destinos ambíguos, não escolha aleatoriamente.
 
 ## Não faça
 

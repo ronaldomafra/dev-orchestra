@@ -6,6 +6,9 @@ Use este modelo para delegar uma tarefa. Remova os campos sem uso e mantenha a m
 
     TASK: <ID>
     INSTRUCTION: <objetivo, escopo, critérios e restrições>
+    MODEL: <modelo aprovado>
+    EFFORT: <esforço aprovado>
+    MODEL_REASON: <justificativa curta>
     RETURN_TO: <nome exato ou UUID confirmado da sessão Orchestrator>
 
 ## Detalhes da tarefa
@@ -19,9 +22,10 @@ Use este modelo para delegar uma tarefa. Remova os campos sem uso e mantenha a m
   - [ ]
 - **Restrições:**
 - **Referências necessárias:**
+- **Validação esperada:** comandos/testes
 - **Evidências esperadas:**
 - **Sessão de retorno:** Orchestrator
 
 ## Retorno
 
-Instrua o worker a responder pelo mesmo canal usando templates/result.md. No Codex, a comunicação usa codex queue. O worker deve devolver o resultado sem depender de o usuário copiar mensagens.
+Instrua o worker a responder pelo mesmo transporte usando templates/result.md: `codex queue` no Codex ou SendMessage no Claude Code. O worker deve devolver o resultado sem depender de o usuário copiar mensagens. O handoff deve ser autossuficiente: o worker não vê a conversa do Orchestrator.

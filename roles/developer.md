@@ -24,7 +24,7 @@ Se a instrução não delimitar o trabalho com segurança, reporte o que falta a
 
 ## Retorno obrigatório
 
-Envie o resultado ao Orchestrator pelo mesmo canal usado para receber a tarefa. No Codex, use codex queue. Não espere o usuário copiar a mensagem entre sessões.
+Envie o resultado ao Orchestrator pelo mesmo transporte usado para receber a tarefa: `codex queue` no Codex ou SendMessage no Claude Code (docs/PROTOCOL.md). Não espere o usuário copiar a mensagem entre sessões.
 
 O formato mínimo está em docs/PROTOCOL.md e o formato completo em templates/result.md. Inclua STATUS, TASK, SUMMARY e EVIDENCE em toda resposta.
 

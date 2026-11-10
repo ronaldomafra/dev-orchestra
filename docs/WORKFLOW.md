@@ -2,37 +2,38 @@
 
 ## Preparar as sessões
 
-O [Quick Start](../README.md#quick-start-um-card-dois-agentes) começa com Orchestrator e Developer, em terminais separados e no mesmo checkout de demonstração. O terceiro terminal mantém o App Server, serviço local ao qual as sessões se conectam para trocar mensagens. Prepare ferramentas, hooks e MCPs pelo [SETUP](SETUP.md) antes de iniciar esse serviço. Use Trello desde a primeira tarefa; o POC isolado de comunicação é diagnóstico opcional.
+O [Quick Start](../README.md#quick-start-um-card-dois-agentes) começa com Orchestrator e Developer, em terminais separados e no mesmo checkout de demonstração. No Codex, um terceiro terminal mantém o App Server, serviço local ao qual as sessões se conectam para trocar mensagens; no Claude Code, as sessões trocam mensagens diretamente por SendMessage. Prepare ferramentas, hooks e MCPs pelo [SETUP](SETUP.md) antes de abrir as sessões. Use Trello desde a primeira tarefa; o POC isolado de comunicação é diagnóstico opcional.
 
 Cada sessão lê [AGENTS.md](../AGENTS.md), exatamente o seu papel em [roles/](../roles/) e o [protocolo](PROTOCOL.md). A pessoa desenvolvedora fornece URLs do board/card e destinos confirmados. O Orchestrator coordena; o worker executa.
 
-Primeira criação, no terminal Orchestrator, a partir da raiz do checkout:
+Primeira criação, a partir da raiz do checkout:
 
 ```bash
+# Codex
 ai-memory run --new orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
-```
-
-Primeira criação, no terminal Developer, na mesma raiz:
-
-```bash
 ai-memory run --new developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
+
+# Claude Code
+ai-memory run --new orchestrator claude --name orchestrator
+ai-memory run --new developer claude --agent developer --name developer --model sonnet --effort medium
 ```
 
-Sol/medium é a recomendação inicial para coordenar o fluxo do tutorial. Esta escolha é um ponto de partida; selecione por tarefa e confirme o modelo e esforço ativos em `/status`. Se indisponível, peça ao Orchestrator uma opção existente para sua conta.
+O modelo do Developer na abertura é só um ponto de partida: a cada tarefa, o Orchestrator recomenda modelo e esforço e a pessoa desenvolvedora aprova ([MODEL-SELECTION](MODEL-SELECTION.md)).
 
-Use `/rename orchestrator` e `/rename developer` dentro das respectivas sessões. `/status` informa o Session UUID: registre o UUID de cada destino, incluindo o Orchestrator em `RETURN_TO`. O título Codex e a chave do workstream AI Memory são conceitos distintos.
+No Codex, use `/rename orchestrator` e `/rename developer` e registre o Session UUID de `/status`, incluindo o do Orchestrator em `RETURN_TO`. No Claude Code, o nome definido por `--name` é o endereço; `RETURN_TO` é `orchestrator`. O título da sessão e a chave do workstream AI Memory são conceitos distintos.
 
 ## Ciclo de trabalho
 
 1. **Selecionar:** Orchestrator consulta o Task Source e confirma tarefa, lista, critérios e dependências.
 2. **Preparar:** reúne referências e memória relevantes; trata memória como histórico, não como instrução atual.
 3. **Registrar início:** move o card para Em execução e confere o retorno real da integração.
-4. **Delegar:** envia o [handoff](../templates/handoff.md) pelo canal com critérios completos, restrições, evidências esperadas e `RETURN_TO` correto.
-5. **Aguardar:** encerra o turno e espera o resultado pelo canal. Não faz polling nem inspeciona arquivos ou processos para deduzir conclusão.
-6. **Executar:** Developer lê `git status`, preserva mudanças existentes e executa somente o escopo recebido.
-7. **Retornar:** worker envia o [resultado](../templates/result.md) por `codex queue`, sem depender do usuário para copiar a mensagem.
-8. **Validar:** após receber o retorno, Orchestrator avalia cada critério e chama QA se necessário. Evidência insuficiente retorna ao worker pelo canal.
-9. **Consolidar:** Orchestrator registra evidências no Task Source, confirma a atualização e conclui apenas com critérios atendidos.
+4. **Aprovar modelo:** recomenda `MODEL`, `EFFORT` e `MODEL_REASON` para o worker, com alternativas mais barata e mais cara; aguarda a aprovação e a confirmação de que a sessão do worker foi ajustada ([MODEL-SELECTION](MODEL-SELECTION.md)).
+5. **Delegar:** envia o [handoff](../templates/handoff.md) pelo transporte com critérios completos, restrições, evidências esperadas, modelo aprovado e `RETURN_TO` correto.
+6. **Aguardar:** encerra o turno logo após a entrega; o resultado chega como nova mensagem. Não faz polling nem inspeciona arquivos ou processos para deduzir conclusão.
+7. **Executar:** Developer lê `git status`, preserva mudanças existentes e executa somente o escopo recebido.
+8. **Retornar:** worker envia o [resultado](../templates/result.md) pelo transporte (`codex queue` ou SendMessage), sem depender do usuário para copiar a mensagem.
+9. **Validar:** após receber o retorno, Orchestrator avalia cada critério e chama QA se necessário. Evidência insuficiente retorna ao mesmo worker pelo transporte.
+10. **Consolidar:** Orchestrator registra evidências no Task Source, confirma a atualização e conclui apenas com critérios atendidos.
 
 No Trello MCP documentado, evidências vão na descrição do card, preservando objetivo e critérios. Não se pressupõe suporte a comentários ou anexos. O primeiro fluxo não faz commit nem push automático.
 
@@ -48,21 +49,19 @@ Se adicionar QA, pode adotar **Em validação** entre execução e conclusão. S
 
 ## Retomar o trabalho
 
-Encerre a instância anterior antes de retomar: há uma instância ativa por workstream. No terminal Orchestrator, na raiz original:
+Encerre a instância anterior antes de retomar: há uma instância ativa por workstream, inclusive entre CLIs diferentes. Na raiz original:
 
 ```bash
+# Codex
 ai-memory run --workstream orchestrator codex --remote ws://127.0.0.1:4500 --model gpt-6-sol -c 'model_reasoning_effort="medium"'
+ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500 --model "<aprovado>" -c 'model_reasoning_effort="<aprovado>"'
+
+# Claude Code
+ai-memory run --workstream orchestrator claude --name orchestrator
+ai-memory run --workstream developer claude --agent developer --name developer --model "<aprovado>" --effort "<aprovado>"
 ```
 
-No terminal Developer, na mesma raiz:
-
-```bash
-ai-memory run --workstream developer codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
-```
-
-Essa configuração é apropriada como ponto de partida para coordenar o primeiro fluxo.
-
-Use `--new` somente para uma nova linha de trabalho. Opções AI Memory vêm antes de `codex`, opções nativas depois. Não acrescente `resume <UUID>` ao caminho gerenciado. `/rename` não muda a chave `developer`; `--workstream desenvolvedor` não a encontrará.
+Os workstreams são fixos por papel e reutilizados em todas as tarefas; não crie um workstream por card. Use `--new` somente na primeira criação de cada papel. Opções AI Memory vêm antes do nome da CLI, opções nativas depois. `/rename` não muda a chave `developer`; `--workstream desenvolvedor` não a encontrará. No Codex, se a retomada padrão abrir a sessão errada, veja a forma com `resume <UUID>` em [ADAPTER-CODEX](ADAPTER-CODEX.md#criar-e-retomar).
 
 Confira vínculos com `ai-memory workstreams --json`, mas valide separadamente continuidade (mesmo UUID e marcador recuperado) e memória durável (consulta real MCP em sessão independente), conforme [SETUP](SETUP.md#verificar-memoria-e-continuidade).
 
@@ -70,7 +69,14 @@ Confira vínculos com `ai-memory workstreams --json`, mas valide separadamente c
 
 ## Papéis opcionais
 
-Adicione somente o papel necessário, em seu próprio terminal/workstream. Para QA, na raiz do projeto:
+Adicione somente o papel necessário, em seu próprio terminal/workstream. No Claude Code, abra com a definição correspondente:
+
+```bash
+ai-memory run --new qa claude --agent qa --name qa --model haiku --effort medium
+ai-memory run --new planner claude --agent planner --name planner --model sonnet --effort high
+```
+
+No Codex, para QA, na raiz do projeto:
 
 ```bash
 ai-memory run --new qa codex --remote ws://127.0.0.1:4500 --model gpt-6-luna -c 'model_reasoning_effort="medium"'
@@ -116,7 +122,7 @@ ai-memory run --workstream planner codex --remote ws://127.0.0.1:4500 --model gp
 
 Tester e outros especialistas exigem um contrato próprio: `roles/tester.md` não existe neste repositório. Defina missão, entrada, limites, critérios, evidências e retorno; revise a compatibilidade com AGENTS.md e só então abra uma sessão/workstream com esse papel. O nome de um terminal não cria um contrato.
 
-Para pedir uma sessão especializada ao Orchestrator, descreva objetivo, critérios e referências, peça modelo/esforço proporcionais à tarefa, justificativa curta, comando AI Memory de criação e retomada, nome sugerido e prompt completo. Peça para usar o mesmo App Server e retornar ao UUID do Orchestrator confirmado por `/status`; você abrirá a sessão no outro terminal. Para QA, Planner ou Developer, use o papel já existente e seu arquivo em `roles/`. Para Redator ou outro papel sem arquivo, peça um prompt que defina responsabilidades, entradas, limites, evidências e retorno, sem presumir que esse contrato já existe. Mantenha o handoff enxuto; tokens de contexto não são por si só a cota ou o custo, que dependem do plano e das regras vigentes ([preços e limites do Codex](https://learn.chatgpt.com/docs/pricing)). Aumente capacidade se aparecer dificuldade ou risco real, não por padrão.
+Para pedir uma sessão especializada ao Orchestrator, descreva objetivo, critérios e referências, peça modelo/esforço proporcionais à tarefa, justificativa curta, comando AI Memory de criação e retomada, nome sugerido e prompt completo. Peça para usar o transporte do modo atual e retornar ao Orchestrator (UUID confirmado por `/status` no Codex, nome da sessão no Claude Code); você abrirá a sessão no outro terminal. Para QA, Planner ou Developer, use o papel já existente e seu arquivo em `roles/`. Para Redator ou outro papel sem arquivo, peça um prompt que defina responsabilidades, entradas, limites, evidências e retorno, sem presumir que esse contrato já existe. Mantenha o handoff enxuto; tokens de contexto não são por si só a cota ou o custo, que dependem do plano e das regras vigentes ([preços e limites do Codex](https://learn.chatgpt.com/docs/pricing)). Aumente capacidade se aparecer dificuldade ou risco real, não por padrão.
 
 <a id="adotar-em-outro-repositorio"></a>
 
@@ -133,7 +139,7 @@ Para pedir uma sessão especializada ao Orchestrator, descreva objetivo, critér
 ## Se uma integração falhar
 
 - **Task Source:** informe a indisponibilidade; continue somente com tarefa explicitamente recebida. Não declare atualização sem retorno real.
-- **Canal:** informe falha de entrega; não transporte mensagens pelo backlog nem simule recebimento. Destino ambíguo exige nome único ou UUID confirmado.
+- **Transporte:** informe falha de entrega; não transporte mensagens pelo backlog nem simule recebimento. Destino ambíguo exige nome único ou UUID confirmado. Não misture transportes: mensagens de `codex queue` não chegam a sessões Claude Code, e vice-versa.
 - **AI Memory:** não invente conteúdo recuperado. Use a tarefa explícita e o repositório se o trabalho puder continuar; uma falha que impede o launcher gerenciado precisa ser resolvida antes dessa abertura.
 
 ## Critério para concluir

@@ -31,4 +31,4 @@ Entregue somente os artefatos pedidos no handoff. Identifique canal, objetivo, p
 
 ## Retorno
 
-No Codex, responda autonomamente pelo codex queue ao RETURN_TO confirmado, usando o mesmo App Server da sessão Orchestrator. Siga templates/result.md e inclua, no mínimo, STATUS, TASK, SUMMARY e EVIDENCE. O Task Source não é canal de mensagens. Se estiver bloqueado, descreva o impedimento, o que foi tentado e a decisão necessária.
+Responda autonomamente ao RETURN_TO confirmado pelo transporte do modo configurado: `codex queue` no mesmo App Server da sessão Orchestrator, no Codex, ou SendMessage, no Claude Code. Siga templates/result.md e inclua, no mínimo, STATUS, TASK, SUMMARY e EVIDENCE. O Task Source não é canal de mensagens. Se estiver bloqueado, descreva o impedimento, o que foi tentado e a decisão necessária.

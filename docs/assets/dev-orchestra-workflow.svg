@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>
+<rect width="1600" height="1080" fill="#fbf8f1"/>
+<text x="40" y="58" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="34" font-weight="700" fill="#1f2933" text-anchor="start">Dev Orchestra — fluxo de trabalho</text>
+<text x="40" y="92" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#52606d" text-anchor="start">O mesmo ciclo em Codex ou Claude Code: muda só o transporte entre sessões. Cada papel roda no próprio terminal.</text>
+<rect x="40" y="130" width="270" height="190" rx="14" fill="#ffffff" stroke="#7b8794" stroke-width="2.5"/>
+<text x="62" y="166" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#1f2933" text-anchor="start">Pessoa desenvolvedora</text>
+<text x="62" y="200" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#52606d" text-anchor="start">• define prioridades</text>
+<text x="62" y="228" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#52606d" text-anchor="start">• aprova modelo e esforço</text>
+<text x="62" y="256" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#52606d" text-anchor="start">• decide produto,</text>
+<text x="62" y="284" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#52606d" text-anchor="start">   arquitetura e risco</text>
+<rect x="470" y="110" width="540" height="262" rx="14" fill="#ffffff" stroke="#1f2933" stroke-width="2.5"/>
+<path d="M470,124 a14,14 0 0 1 14,-14 h512 a14,14 0 0 1 14,14 v32 h-540 z" fill="#1f2933"/>
+<text x="490" y="141" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#fff" text-anchor="start">Orchestrator</text>
+<text x="990" y="141" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#cbd2d9" text-anchor="end">workstream orchestrator</text>
+<circle cx="502" cy="181" r="12" fill="#3e4c59"/>
+<text x="502" y="186" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text x="524" y="186" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Lê o card e confirma os critérios no código</text>
+<circle cx="502" cy="208" r="12" fill="#3e4c59"/>
+<text x="502" y="213" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text x="524" y="213" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Move o card para Em execução</text>
+<circle cx="502" cy="235" r="12" fill="#3e4c59"/>
+<text x="502" y="240" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="524" y="240" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Recomenda MODEL / EFFORT e pede aprovação</text>
+<circle cx="502" cy="262" r="12" fill="#3e4c59"/>
+<text x="502" y="267" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="524" y="267" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Envia o handoff com RETURN_TO</text>
+<circle cx="502" cy="289" r="12" fill="#3e4c59"/>
+<text x="502" y="294" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<text x="524" y="294" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Encerra o turno — sem sleep nem polling</text>
+<circle cx="502" cy="316" r="12" fill="#3e4c59"/>
+<text x="502" y="321" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">8</text>
+<text x="524" y="321" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Confere cada critério e evidência</text>
+<circle cx="502" cy="343" r="12" fill="#3e4c59"/>
+<text x="502" y="348" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">9</text>
+<text x="524" y="348" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Registra as evidências e conclui o card</text>
+<rect x="1290" y="130" width="270" height="190" rx="14" fill="#ffffff" stroke="#0c66e4" stroke-width="2.5"/>
+<text x="1312" y="166" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#0c66e4" text-anchor="start">Trello · Task Source</text>
+<rect x="1310" y="182" width="72" height="74" rx="6" fill="#f4f5f7" stroke="#c1c7d0" stroke-width="1.2"/>
+<text x="1346" y="200" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="middle">Backlog</text>
+<rect x="1317" y="208" width="58" height="14" rx="3" fill="#dfe1e6" stroke="none" stroke-width="0"/>
+<rect x="1317" y="228" width="58" height="14" rx="3" fill="#dfe1e6" stroke="none" stroke-width="0"/>
+<rect x="1388" y="182" width="72" height="74" rx="6" fill="#f4f5f7" stroke="#c1c7d0" stroke-width="1.2"/>
+<text x="1424" y="200" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="middle">Em execução</text>
+<rect x="1395" y="208" width="58" height="14" rx="3" fill="#ffe7a3" stroke="none" stroke-width="0"/>
+<rect x="1395" y="228" width="58" height="14" rx="3" fill="#ffe7a3" stroke="none" stroke-width="0"/>
+<rect x="1466" y="182" width="72" height="74" rx="6" fill="#f4f5f7" stroke="#c1c7d0" stroke-width="1.2"/>
+<text x="1502" y="200" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="10.5" font-weight="700" fill="#52606d" text-anchor="middle">Concluído</text>
+<rect x="1473" y="208" width="58" height="14" rx="3" fill="#c3f0d2" stroke="none" stroke-width="0"/>
+<rect x="1473" y="228" width="58" height="14" rx="3" fill="#c3f0d2" stroke="none" stroke-width="0"/>
+<text x="1312" y="282" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#52606d" text-anchor="start">estado operacional</text>
+<text x="1312" y="304" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#52606d" text-anchor="start">não é canal de mensagens</text>
+<path d="M1290,190 H1018" fill="none" stroke="#0c66e4" stroke-width="2.5" marker-end="url(#ah)" style="color:#0c66e4"/>
+<circle cx="1072" cy="172" r="12" fill="#0c66e4"/>
+<text x="1072" y="177" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text x="1090" y="177" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14" font-weight="600" fill="#0c66e4" text-anchor="start">card e critérios</text>
+<path d="M1010,290 H1282" fill="none" stroke="#0c66e4" stroke-width="2.5" marker-end="url(#ah)" style="color:#0c66e4"/>
+<circle cx="1072" cy="314" r="12" fill="#0c66e4"/>
+<text x="1072" y="319" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<circle cx="1100" cy="314" r="12" fill="#0c66e4"/>
+<text x="1100" y="319" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">9</text>
+<text x="1118" y="319" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14" font-weight="600" fill="#0c66e4" text-anchor="start">status e evidências</text>
+<path d="M470,190 H318" fill="none" stroke="#7b8794" stroke-width="2.5" marker-end="url(#ah)" style="color:#7b8794"/>
+<circle cx="330" cy="172" r="12" fill="#52606d"/>
+<text x="330" y="177" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="346" y="177" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13.5" font-weight="600" fill="#52606d" text-anchor="start">propõe modelo</text>
+<path d="M310,290 H462" fill="none" stroke="#7b8794" stroke-width="2.5" marker-end="url(#ah)" style="color:#7b8794"/>
+<text x="390" y="314" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13.5" font-weight="600" fill="#52606d" text-anchor="middle">aprova e ajusta</text>
+<text x="390" y="333" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13.5" font-weight="600" fill="#52606d" text-anchor="middle">a sessão do worker</text>
+<rect x="240" y="440" width="1000" height="186" rx="14" fill="#fff8ec" stroke="#d9822b" stroke-width="2.5"/>
+<text x="262" y="474" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#a85d00" text-anchor="start">Transporte entre sessões — escolha um modo</text>
+<rect x="262" y="490" width="466" height="122" rx="10" fill="#ffffff" stroke="#3e4c59" stroke-width="1.8"/>
+<text x="282" y="520" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#1f2933" text-anchor="start">Codex</text>
+<text x="282" y="546" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">codex app-server --listen ws://127.0.0.1:4500</text>
+<text x="282" y="570" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">codex queue --thread &lt;nome|UUID&gt; --message …</text>
+<text x="282" y="594" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14.5" font-weight="400" fill="#52606d" text-anchor="start">o retorno chega quando o turno termina</text>
+<rect x="752" y="490" width="466" height="122" rx="10" fill="#ffffff" stroke="#c15f3c" stroke-width="1.8"/>
+<text x="772" y="520" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#c15f3c" text-anchor="start">Claude Code</text>
+<text x="772" y="546" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">claude --name &lt;papel&gt; [--agent &lt;papel&gt;]</text>
+<text x="772" y="570" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#1f2933" text-anchor="start">SendMessage(to: &quot;developer&quot;, …)</text>
+<text x="772" y="594" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14.5" font-weight="400" fill="#52606d" text-anchor="start">mesmo modo de permissão; confira /list-agents</text>
+<path d="M640,372 V434" fill="none" stroke="#1f2933" stroke-width="2.5" marker-end="url(#ah)" style="color:#1f2933"/>
+<circle cx="662" cy="404" r="12" fill="#1f2933"/>
+<text x="662" y="409" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="682" y="409" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14" font-weight="600" fill="#1f2933" text-anchor="start">handoff</text>
+<path d="M840,440 V380" fill="none" stroke="#1f2933" stroke-width="2.5" marker-end="url(#ah)" style="color:#1f2933"/>
+<circle cx="862" cy="404" r="12" fill="#1f2933"/>
+<text x="862" y="409" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">7</text>
+<text x="882" y="409" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14" font-weight="600" fill="#1f2933" text-anchor="start">retorno</text>
+<rect x="240" y="706" width="480" height="176" rx="14" fill="#ffffff" stroke="#2b8a3e" stroke-width="2.5"/>
+<text x="262" y="742" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#2b8a3e" text-anchor="start">Developer</text>
+<text x="698" y="742" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#52606d" text-anchor="end">workstream developer</text>
+<text x="262" y="776" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">lê git status e preserva mudanças locais</text>
+<circle cx="274" cy="801" r="12" fill="#2b8a3e"/>
+<text x="274" y="806" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<text x="294" y="806" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">executa só o escopo e roda as validações</text>
+<circle cx="274" cy="831" r="12" fill="#2b8a3e"/>
+<text x="274" y="836" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">7</text>
+<text x="294" y="836" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">devolve STATUS · CHANGES · VALIDATION ·</text>
+<text x="294" y="860" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">RISKS · EVIDÊNCIAS ao RETURN_TO</text>
+<rect x="760" y="706" width="480" height="176" rx="14" fill="#ffffff" stroke="#7048e8" stroke-width="2.5" stroke-dasharray="9 6"/>
+<text x="782" y="742" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#7048e8" text-anchor="start">Planner · QA</text>
+<text x="1218" y="742" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="14" font-weight="400" fill="#52606d" text-anchor="end">opcionais</text>
+<text x="782" y="776" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">Planner analisa e decompõe; não implementa</text>
+<text x="782" y="804" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">QA valida critérios; não corrige em silêncio</text>
+<text x="782" y="832" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">mesmo protocolo de handoff e retorno</text>
+<text x="782" y="860" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#52606d" text-anchor="start">nenhum worker altera o Task Source</text>
+<path d="M410,626 V700" fill="none" stroke="#2b8a3e" stroke-width="2.5" marker-end="url(#ah)" style="color:#2b8a3e"/>
+<path d="M550,706 V634" fill="none" stroke="#2b8a3e" stroke-width="2.5" marker-end="url(#ah)" style="color:#2b8a3e"/>
+<path d="M930,626 V700" fill="none" stroke="#7048e8" stroke-width="2.5" marker-end="url(#ah)" stroke-dasharray="7 5" style="color:#7048e8"/>
+<path d="M1070,706 V634" fill="none" stroke="#7048e8" stroke-width="2.5" marker-end="url(#ah)" stroke-dasharray="7 5" style="color:#7048e8"/>
+<rect x="40" y="930" width="1520" height="118" rx="14" fill="#e6f6f8" stroke="#0b7285" stroke-width="2.5"/>
+<text x="62" y="966" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#0b7285" text-anchor="start">AI Memory</text>
+<text x="176" y="966" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#1f2933" text-anchor="start">conhecimento durável · um workstream fixo por papel, reutilizado a cada tarefa</text>
+<rect x="62" y="986" width="138" height="32" rx="16" fill="#ffffff" stroke="#0b7285" stroke-width="1.5"/>
+<text x="131" y="1007" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#0b7285" text-anchor="middle">orchestrator</text>
+<rect x="212" y="986" width="138" height="32" rx="16" fill="#ffffff" stroke="#0b7285" stroke-width="1.5"/>
+<text x="281" y="1007" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#0b7285" text-anchor="middle">developer</text>
+<rect x="362" y="986" width="138" height="32" rx="16" fill="#ffffff" stroke="#0b7285" stroke-width="1.5"/>
+<text x="431" y="1007" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="14" font-weight="400" fill="#0b7285" text-anchor="middle">planner</text>
+<text x="540" y="1000" font-family="Noto Sans Mono, DejaVu Sans Mono, monospace" font-size="15" font-weight="400" fill="#1f2933" text-anchor="start">linked_harnesses: codex + claude — o workstream continua ao trocar de CLI</text>
+<text x="540" y="1026" font-family="Noto Sans, DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#52606d" text-anchor="start">memória recuperada é histórico, não instrução; o estado das tarefas vive no Task Source</text>
+<path d="M480,882 V930" stroke="#0b7285" stroke-width="2" stroke-dasharray="5 5" fill="none"/>
+<path d="M1000,882 V930" stroke="#0b7285" stroke-width="2" stroke-dasharray="5 5" fill="none"/>
+<path d="M470,356 H175 V930" stroke="#0b7285" stroke-width="2" stroke-dasharray="5 5" fill="none"/>
+</svg>

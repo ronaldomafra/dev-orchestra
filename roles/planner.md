@@ -29,4 +29,4 @@ Reduzir incerteza antes da execução e entregar ao Orchestrator um plano curto 
 
 ## Retorno
 
-Envie ao Orchestrator uma síntese com análise, dependências, riscos e próximo passo. Use STATUS, TASK, SUMMARY e EVIDENCE conforme docs/PROTOCOL.md; use templates/result.md quando a análise for uma tarefa delegada.
+Envie ao Orchestrator, pelo transporte do modo configurado, uma síntese com análise, dependências, riscos e próximo passo, incluindo modelo/esforço recomendados para cada etapa de execução. Use STATUS, TASK, SUMMARY e EVIDENCE conforme docs/PROTOCOL.md; use templates/result.md quando a análise for uma tarefa delegada.

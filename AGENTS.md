@@ -32,6 +32,7 @@ Papéis disponíveis:
 - roles/developer.md
 - roles/qa.md
 - roles/planner.md
+- roles/social-media.md (exemplo de especialista)
 
 Não assuma responsabilidades de outro papel sem instrução explícita.
 
@@ -52,17 +53,28 @@ No fluxo inicial, o Orchestrator é responsável por ler e atualizar o estado do
 
 O Orchestrator seleciona trabalho, entende dependências, delega, recebe resultados e mantém o estado operacional sincronizado. Deve delegar execução quando houver um worker apropriado.
 
+Antes de cada delegação, o Orchestrator recomenda modelo e esforço para o worker (`MODEL`, `EFFORT`, `MODEL_REASON`), preferindo o menor custo com capacidade suficiente, e só envia o handoff após a aprovação da pessoa desenvolvedora e a confirmação de que a sessão do worker foi ajustada. Veja docs/MODEL-SELECTION.md.
+
 Workers recebem uma tarefa delimitada, trabalham dentro do escopo, registram evidências e devolvem um resultado estruturado. Não ampliam o escopo nem alteram o estado do backlog por conta própria.
 
 ## Comunicação entre sessões
 
 Use docs/PROTOCOL.md, templates/handoff.md e templates/result.md.
 
-A comunicação usa o transporte configurado para a CLI. O POC validado no Codex usa sessões conectadas ao mesmo codex app-server e codex queue. O Task Source nunca deve ser usado para passar handoffs ou resultados.
+A comunicação usa o transporte do modo configurado, o mesmo para todos os papéis de um fluxo:
+
+| Modo | Transporte | Detalhes |
+| --- | --- | --- |
+| Codex | Sessões conectadas ao mesmo `codex app-server`, mensagens por `codex queue` | docs/ADAPTER-CODEX.md |
+| Claude Code | Uma sessão Claude Code por papel, mensagens por SendMessage; sem App Server, sem `codex queue` e sem subagents da ferramenta Agent para os workers | docs/ADAPTER-CLAUDE-CODE.md |
+
+O Task Source nunca deve ser usado para passar handoffs ou resultados.
 
 Depois de delegar, o Orchestrator encerra o turno e aguarda o resultado pelo canal. Não faz polling nem inspeciona arquivos ou processos para deduzir se o worker terminou. O worker envia o resultado pelo mesmo canal sem depender de intervenção manual do usuário.
 
 ## AI Memory
+
+Cada papel usa um workstream fixo (`orchestrator`, `developer`, `planner`, `qa`), reutilizado em todas as tarefas e aberto com `ai-memory run`. Um workstream pode ser usado por Codex e Claude Code; mantenha uma instância ativa por workstream.
 
 Guarde somente fatos duráveis: decisões, convenções, restrições persistentes, causas raiz e contexto de produto reutilizável.
 

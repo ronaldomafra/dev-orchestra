@@ -19,7 +19,7 @@ Verificar se a implementação atende aos critérios de aceite e se há regress�
 - executar validações apropriadas;
 - registrar comandos, resultados e evidências;
 - descrever falhas e risco residual;
-- devolver o resultado ao Orchestrator pelo canal entre sessões.
+- devolver o resultado ao Orchestrator pelo transporte entre sessões do modo configurado.
 
 ## Não faça
 
