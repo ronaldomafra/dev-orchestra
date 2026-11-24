@@ -1,8 +1,159 @@
 # Dev Orchestra
 
-Dev Orchestra é um processo e um conjunto de contratos para organizar desenvolvimento assistido por IA. Ele separa a coordenação da execução e registra o trabalho em fontes distintas: backlog, memória durável, repositório e contexto temporário da sessão. Você combina ferramentas existentes e acompanha a execução em sessões independentes, cada uma aberta em seu próprio terminal. Este repositório fornece os contratos e guias; não há um runtime ou instalador próprio do Dev Orchestra.
+**Desenvolvimento assistido por IA com várias sessões de agente, cada uma no seu terminal, coordenadas por um delegador MCP.**
 
-O processo funciona com duas CLIs: **Codex** e **Claude Code**. Papéis, protocolo e Task Source são os mesmos; muda apenas o transporte entre sessões.
+![TUI do dev-orchestra: projetos, sessões, tarefas e agentes passivos](docs/assets/tui/01-projetos.png)
+
+O Dev Orchestra é um método e uma ferramenta. O **método** é um conjunto de contratos (`AGENTS.md`, `roles/`, protocolo e templates) que separa coordenação de execução e diz onde cada informação vive: backlog, memória durável, repositório e contexto da sessão. A **ferramenta** `dev-orchestra` (TUI + CLI, em [`tool/`](tool/)) cadastra os projetos e mostra os comandos para abrir cada sessão. Também envia as instruções e as tarefas e acompanha tudo ao vivo. A comunicação entre as sessões passa pelo **delegador**, um servidor MCP local que confere as permissões de cada papel e registra cada troca.
+
+Você continua no controle: aprova o modelo e o esforço de cada delegação e toma as decisões de produto, arquitetura e risco. Também vê o trabalho acontecendo em terminais separados, em vez de uma única sessão com subagentes escondidos.
+
+### Destaques
+
+- **Um papel por sessão.** Orchestrator, Developer, QA, Planner e especialistas, cada um com instruções e contexto próprios. O orquestrador delega e os workers executam e devolvem evidências.
+- **Delegador MCP como canal único.** As sessões usam `delegate`, `receive`, `report`, `ask`, `answer` e `cancel_task`. O delegador aplica as permissões de cada papel (um worker não delega), exige a aprovação do modelo e guarda tarefas, mensagens e eventos em SQLite. Ele também acorda a sessão ociosa por hooks: ninguém precisa copiar e colar entre terminais.
+- **Independente de CLI.** O contrato vale para qualquer CLI. Claude Code e Codex são suportados hoje, e qualquer CLI que fale MCP pode entrar (veja a [situação por CLI](#situação-por-cli)).
+- **Agentes passivos.** São auxiliares de análise sem sessão aberta e sem vínculo com um projeto. Bots, scripts ou sessões de outros projetos os consultam pelo id, via MCP. Cada consulta passa por uma fila e tem os tokens e o custo registrados.
+- **TUI de acompanhamento.** Saúde das sessões, passo a passo do projeto, kanban, monitor ao vivo do delegador, alertas e painel dos agentes passivos.
+- **Fontes separadas.** O Task Source (Trello ou arquivos) guarda o backlog, o [AI Memory](https://github.com/akitaonrails/ai-memory) guarda o conhecimento durável com um workstream fixo por papel, e o Git guarda código e contratos.
+
+## Arquitetura
+
+![Arquitetura do Dev Orchestra: sessões por papel, delegador MCP, agentes passivos, Task Source, AI Memory e Git](docs/assets/dev-orchestra-architecture-v2.png)
+
+- A **pessoa desenvolvedora** usa a TUI ou a CLI para cadastrar o projeto, receber os comandos de cada terminal e enviar as instruções e as tarefas.
+- As **sessões de projeto** são CLIs interativas, uma por papel. Elas só se falam pelas ferramentas do delegador. Quando chega uma mensagem, um hook acorda a sessão, que busca o conteúdo com `receive`.
+- O **delegador** roda num container Docker em `127.0.0.1:8787` e guarda o estado num volume SQLite. É também por ele que a TUI acompanha eventos, perguntas, recusas e alertas.
+- Os **agentes passivos** recebem consultas de qualquer sistema com `consult(agent_id, pedido)`. O executor roda a CLI do agente (por exemplo, `claude -p --resume <sessão>`) e devolve a resposta no formato definido no perfil do agente.
+
+### Situação por CLI
+
+| CLI | Papéis de projeto (sessão interativa) | Agente passivo |
+| --- | --- | --- |
+| **Claude Code** | **Validado** com o delegador em sessões reais ([homologação](docs/HOMOLOGACAO-DELEGADOR-CLAUDE.md)) | **Validado** em uso real (`claude -p --resume`) |
+| **Codex** | Validado no modo original (`codex queue`). Com o delegador: implementado (o delegador acorda a sessão via App Server); homologação pendente | Implementado (`codex exec resume`); homologação pendente |
+| **OpenCode** | Previsto, via MCP | Implementado (`opencode run --session`); homologação pendente |
+| **Ollama** | Não se aplica | Implementado (`/api/chat`, modelo local, sem sessão); homologação pendente |
+| **Kimi Code, Gemini CLI e outras** | Previsto: a CLI precisa falar MCP e ter um modo de acordar a sessão | Pelo tipo "comando" (o pedido vai no stdin); homologação pendente |
+
+"Implementado" significa que o código e os testes automatizados existem, mas o fluxo ainda não foi exercitado com contas e sessões reais.
+
+## A TUI
+
+`dev-orchestra` sem argumentos abre a TUI. As capturas abaixo usam dados de demonstração.
+
+**Projeto:** passo a passo (cadastro → sessões → instruções → tarefas), agentes, tarefas e a atividade recente, incluindo os eventos do delegador.
+
+![Visão geral do projeto](docs/assets/tui/02-projeto.png)
+
+**Agentes:** um cartão por agente, com CLI, modelo e esforço, sessão, instruções, workstream no AI Memory, registro no delegador e a tarefa atual.
+
+![Agentes do projeto](docs/assets/tui/03-agentes.png)
+
+**Tarefas:** um kanban que reflete o estado ao vivo no delegador (executando, pergunta, concluída).
+
+![Kanban de tarefas](docs/assets/tui/04-tarefas.png)
+
+**Subir ou retomar:** um bloco de comandos por terminal. A ferramenta decide entre `--new` e `--workstream` conforme o que o AI Memory já conhece, e as teclas `1` a `9` copiam cada bloco.
+
+![Plano de subida](docs/assets/tui/05-subir.png)
+
+**Monitor (`a`):** linha do tempo do delegador em todos os projetos, com delegações, perguntas, resultados, recusas de permissão e a latência até a sessão receber. Os filtros e a busca ficam na mesma tela, e a delegação pode ser cancelada dali.
+
+![Monitor do delegador](docs/assets/tui/06-monitor.png)
+
+**Agente passivo:** estado, fila, consultas do dia, tokens, custo e tempo de resposta (mediana e p90). Mostra também o pedido e a resposta de cada consulta, a configuração e os eventos.
+
+![Tela do agente passivo](docs/assets/tui/07-agente-passivo.png)
+
+**Novo agente passivo:** escolha a CLI, o modelo e o esforço, as permissões (que viram flags da CLI) e o perfil, que pode ser gerado por IA. À direita aparece a linha de comando exata que cada consulta vai rodar.
+
+![Formulário de agente passivo](docs/assets/tui/08-novo-passivo.png)
+
+## Começar com a ferramenta
+
+Requisitos: Linux, Python 3.11+, [`uv`](https://docs.astral.sh/uv/), Docker, a CLI dos agentes (`claude` ou `codex`) autenticada e o [AI Memory](docs/SETUP.md#ai-memory). O Trello é opcional: as tarefas também podem ficar em arquivos Markdown no projeto.
+
+```bash
+git clone https://github.com/ronaldomafra/dev-orchestra.git
+cd dev-orchestra
+uv tool install './tool[delegator]'     # instala o comando `dev-orchestra`
+dev-orchestra delegator docker up       # delegador MCP em 127.0.0.1:8787 (container + volume SQLite)
+dev-orchestra                           # TUI: n cadastra um projeto, m importa um projeto existente
+```
+
+Na TUI, o projeto novo já vem no **modo delegador**. Ao salvar, a ferramenta cria na pasta do projeto os arquivos do método que faltam (nunca sobrescreve) e confere o serviço, o MCP e os hooks. Depois:
+
+1. `u` mostra os comandos de cada terminal. Abra as sessões.
+2. `i` envia as instruções de abertura a cada agente.
+3. `t` cria uma tarefa e `g` a envia ao orquestrador. Ele recomenda o modelo, você aprova e ele delega pelo delegador.
+
+O mesmo fluxo pela linha de comando:
+
+```bash
+dev-orchestra projects add --id meu-projeto --name "Meu projeto" --path ~/projetos/meu-projeto \
+  --role orchestrator=claude,model=sonnet,effort=medium \
+  --role developer=claude,model=sonnet,effort=medium
+dev-orchestra delegator install meu-projeto    # MCP, permissões, hooks e ferramentas das definições de agente
+dev-orchestra up meu-projeto                   # comandos de cada terminal
+dev-orchestra send meu-projeto                 # instruções às sessões abertas
+dev-orchestra tasks new meu-projeto DEMO-001 --title "Meu primeiro fluxo" --role developer
+dev-orchestra tasks send meu-projeto DEMO-001  # entrega a tarefa ao orquestrador
+```
+
+A referência completa (importar projetos, Trello, monitor, alertas, perfis e agentes passivos) está em [tool/README.md](tool/README.md), e o contrato do delegador para os agentes, em [docs/DELEGATOR.md](docs/DELEGATOR.md).
+
+## Agentes passivos
+
+Um agente passivo é um auxiliar chamado sob demanda, por exemplo para um bot que precisa de uma segunda opinião sobre uma operação ou para um pipeline que quer um resumo de logs. Ele não deixa uma sessão aberta. A cada consulta o executor roda a CLI do agente, que retoma a sessão do próprio agente quando a CLI permite, e devolve a resposta. Quem consulta informa só o id e não sabe qual CLI respondeu.
+
+```bash
+dev-orchestra passive add revisor --cli claude -m sonnet -d "Revisa diffs e aponta riscos" --allow-command "git diff,git log"
+dev-orchestra passive start                    # executor em segundo plano
+dev-orchestra passive send revisor "Revise o diff da branch feature/cupom"
+```
+
+De outro sistema, pelo MCP (`list_agents`, `consult` e `consult_result`), com o cliente de exemplo que usa só a biblioteca padrão ([`tool/examples/consultar_agente_passivo.py`](tool/examples/consultar_agente_passivo.py)):
+
+```python
+from consultar_agente_passivo import consultar
+
+resposta = consultar("analista", "Par SOL/USDT, RSI 41 -> 58, volume 1,8x. Entrar?", origem="meu-bot", espera=300)
+if resposta["state"] == "done":
+    print(resposta["result"])   # no formato definido no perfil do agente (por exemplo, JSON)
+```
+
+Cada agente tem `perfil.md` (missão e formato de resposta), uma pasta `arquivos/` para consulta e permissões que viram flags da CLI: leitura, escrita, comandos por prefixo, web, MCPs e configurações do usuário. A fila atende uma consulta por vez por agente, e agentes diferentes rodam em paralelo. Tokens e custo de cada consulta ficam registrados no delegador, que é a base do futuro centro de custo.
+
+## Como funciona
+
+![Fluxo de trabalho do Dev Orchestra](docs/assets/dev-orchestra-workflow.webp)
+
+1. O Orchestrator lê o card e confirma objetivo e critérios.
+2. Move o card para **Em execução** e confere o retorno real do Task Source.
+3. Recomenda modelo e esforço para o worker, com justificativa; a pessoa desenvolvedora aprova e ajusta a sessão do worker.
+4. Delega pelo delegador (`delegate`, com o modelo aprovado); sem o delegador, usa o transporte da CLI (`codex queue` ou SendMessage) com `RETURN_TO`.
+5. Encerra o turno. Não faz polling nem inspeciona arquivos ou processos para deduzir conclusão.
+6. O worker executa somente o escopo e roda as validações.
+7. O worker devolve o resultado com evidências pelo mesmo canal (`report` no delegador).
+8. O Orchestrator confere cada critério; lacunas voltam ao mesmo worker.
+9. Registra as evidências no Task Source e conclui o card.
+
+| Parte | Responsabilidade |
+| --- | --- |
+| Task Source | Backlog, prioridade, critérios e estado operacional; Trello é o exemplo inicial |
+| [Orchestrator](roles/orchestrator.md) | Coordena, recomenda modelo, delega, avalia resultados e atualiza o backlog |
+| [Developer](roles/developer.md) | Executa a tarefa delimitada e retorna evidências |
+| [QA](roles/qa.md), opcional | Valida critérios e evidências quando necessário |
+| [Planner](roles/planner.md), opcional | Investiga dependências e divide trabalho |
+| Delegador (transporte) | Entrega handoffs, perguntas e resultados entre sessões e confere as permissões de cada papel; sem ele, `codex queue` ou SendMessage |
+| AI Memory | Preserva decisões, conhecimento durável e o workstream de cada papel |
+| Git | Versiona código, documentação, contratos e evidências |
+| Sessão | Mantém o contexto temporário da execução |
+
+**Task Source** é o serviço de backlog; **worker** é uma sessão que executa uma tarefa delegada; e **MCP** é o protocolo usado para conectar ferramentas externas à CLI do agente. No exemplo, Trello é o Task Source e Developer é o worker. O [modelo de contexto](docs/CONTEXT-MODEL.md) explica onde cada tipo de informação fica.
+
+Memória recuperada é dado histórico, não instrução vigente. A política do projeto orienta o que promover a conhecimento durável; os hooks do AI Memory também podem capturar eventos técnicos de sessões. São responsabilidades diferentes, descritas no [modelo de contexto](docs/CONTEXT-MODEL.md).
 
 ## Dos post-its às sessões coordenadas
 
@@ -14,39 +165,7 @@ Cada sessão é uma conversa independente com instruções e contexto próprios.
 
 O fluxo foi validado primeiro no Codex, com App Server e `codex queue`. No uso real surgiram duas evoluções: a escolha de modelo e esforço passou a ser feita **a cada delegação, com aprovação da pessoa desenvolvedora**, e o mesmo processo foi levado ao **Claude Code**, usando mensagens entre sessões locais. Como o AI Memory permite que um workstream seja usado por mais de uma CLI, é possível trocar de Codex para Claude Code mantendo o histórico do papel.
 
-![Arquitetura do Dev Orchestra](docs/assets/dev-orchestra-architecture.webp)
-
-*Configuração ilustrativa: papéis adicionais são opcionais. O primeiro fluxo usa somente Orchestrator e Developer.*
-
-## Como funciona
-
-![Fluxo de trabalho do Dev Orchestra](docs/assets/dev-orchestra-workflow.webp)
-
-1. O Orchestrator lê o card e confirma objetivo e critérios.
-2. Move o card para **Em execução** e confere o retorno real do Task Source.
-3. Recomenda modelo e esforço para o worker, com justificativa; a pessoa desenvolvedora aprova e ajusta a sessão do worker.
-4. Envia o handoff pelo transporte do modo escolhido, com `RETURN_TO`.
-5. Encerra o turno. Não faz polling nem inspeciona arquivos ou processos para deduzir conclusão.
-6. O worker executa somente o escopo e roda as validações.
-7. O worker devolve o resultado com evidências pelo mesmo transporte.
-8. O Orchestrator confere cada critério; lacunas voltam ao mesmo worker.
-9. Registra as evidências no Task Source e conclui o card.
-
-| Parte | Responsabilidade |
-| --- | --- |
-| Task Source | Backlog, prioridade, critérios e estado operacional; Trello é o exemplo inicial |
-| [Orchestrator](roles/orchestrator.md) | Coordena, recomenda modelo, delega, avalia resultados e atualiza o backlog |
-| [Developer](roles/developer.md) | Executa a tarefa delimitada e retorna evidências |
-| [QA](roles/qa.md), opcional | Valida critérios e evidências quando necessário |
-| [Planner](roles/planner.md), opcional | Investiga dependências e divide trabalho |
-| Transporte | Entrega handoffs e resultados entre sessões: `codex queue` ou SendMessage no Claude Code |
-| AI Memory | Preserva decisões, conhecimento durável e o workstream de cada papel |
-| Git | Versiona código, documentação, contratos e evidências |
-| Sessão | Mantém o contexto temporário da execução |
-
-**Task Source** é o serviço de backlog; **worker** é uma sessão que executa uma tarefa delegada; e **MCP** é o protocolo usado para conectar ferramentas externas à CLI do agente. No exemplo, Trello é o Task Source e Developer é o worker. O [modelo de contexto](docs/CONTEXT-MODEL.md) explica onde cada tipo de informação fica.
-
-Memória recuperada é dado histórico, não instrução vigente. A política do projeto orienta o que promover a conhecimento durável; os hooks do AI Memory também podem capturar eventos técnicos de sessões. São responsabilidades diferentes, descritas no [modelo de contexto](docs/CONTEXT-MODEL.md).
+O passo seguinte foi tirar o transporte de dentro de cada CLI. O **delegador MCP** virou o canal único entre as sessões: qualquer CLI que fale MCP participa, as permissões de cada papel são conferidas no servidor e a pessoa acompanha tudo pela TUI. Do mesmo transporte nasceram os **agentes passivos**, auxiliares de análise que outros sistemas consultam sem manter uma sessão aberta.
 
 ## Maturidade
 
@@ -57,6 +176,11 @@ Memória recuperada é dado histórico, não instrução vigente. A política do
 | 2026-10 | Workstreams fixos por papel e escolha de modelo/esforço a cada delegação, com aprovação | Em uso real; regra em [MODEL-SELECTION](docs/MODEL-SELECTION.md) |
 | 2026-11 | Modo Claude Code: sessões separadas, `--agent` e SendMessage | Documentado e **em validação**; veja o [registro](docs/CLAUDE-CODE-VALIDATION.md) |
 | 2026-11 | Workstream usado por Codex e Claude Code | Sessão Claude aberta em workstream criado no Codex recebeu o handoff pendente; retomada completa em validação |
+| 2026-11 | Ferramenta `dev-orchestra` (TUI + CLI): cadastro, importação, subida e retomada, tarefas, monitor e alertas | Em uso pessoal; testes automatizados |
+| 2026-11-15 | Delegador MCP com Claude Code: delegar, perguntar e responder, cancelar, permissões por papel e persistência | Homologado com sessões reais ([registro](docs/HOMOLOGACAO-DELEGADOR-CLAUDE.md)) |
+| 2026-11 | Delegador como modo padrão de projetos novos e importados | Em uso em projetos pessoais |
+| 2026-11 | Agentes passivos (Claude) consultados por um bot externo pelo MCP | Validado em uso real |
+| Próximo | Delegador com Codex; agentes passivos com Codex, OpenCode, Ollama e "comando"; centro de custo | Implementado (exceto o centro de custo); homologação pendente |
 
 Resultados observados no uso com Codex, sem medição formal:
 
@@ -66,7 +190,11 @@ Resultados observados no uso com Codex, sem medição formal:
 - testes unitários mais específicos;
 - redução perceptível de alucinações: os agentes passaram a entender melhor o projeto.
 
-O App Server segue experimental na CLI Codex consultada; não foi estabelecida uma versão mínima. Nesta revisão foram consultados Claude Code `2.1.322` e AI Memory `3.4.3`.
+O projeto está em evolução e ainda tem limitações conhecidas. O App Server segue experimental na CLI Codex consultada; não foi estabelecida uma versão mínima. Nesta revisão foram consultados Claude Code `2.1.331` e AI Memory `3.4.6`.
+
+## Usar o método sem a ferramenta
+
+O método não depende da ferramenta: os contratos funcionam com as CLIs abertas à mão, usando o transporte nativo de cada uma (`codex queue` no Codex, SendMessage no Claude Code). É o caminho abaixo, útil para entender o fluxo ou para adotar só os contratos. Com a ferramenta, o delegador é o padrão e substitui esse transporte (veja [docs/DELEGATOR.md](docs/DELEGATOR.md)).
 
 ## Quick Start: um card, dois agentes
 
@@ -341,6 +469,7 @@ Em um projeto existente, leia seu `AGENTS.md` e concilie estas regras com as con
 
 | Documento | Quando consultar |
 | --- | --- |
+| [tool/README.md](tool/README.md) | Ferramenta `dev-orchestra`: TUI, CLI, delegador, monitor, alertas e agentes passivos |
 | [SETUP](docs/SETUP.md) | Instalação Ubuntu, Codex, Claude Code, AI Memory, Trello e diagnóstico |
 | [AGENTS.md](AGENTS.md) | Contrato global vigente |
 | [Papéis](roles/) | Responsabilidade de cada sessão |
@@ -348,6 +477,8 @@ Em um projeto existente, leia seu `AGENTS.md` e concilie estas regras com as con
 | [MODEL-SELECTION](docs/MODEL-SELECTION.md) | Escolha e aprovação de modelo/esforço a cada delegação |
 | [PROTOCOL](docs/PROTOCOL.md) | Handoffs, resultados, destinos e transportes |
 | [ADAPTER-CODEX](docs/ADAPTER-CODEX.md) | App Server, `codex queue`, retomada e particularidades do Codex |
+| [DELEGATOR](docs/DELEGATOR.md) | Modo delegador (MCP): ferramentas, permissões por papel e fluxo; tem precedência sobre o transporte dos adapters |
+| [HOMOLOGACAO-DELEGADOR-CLAUDE](docs/HOMOLOGACAO-DELEGADOR-CLAUDE.md) | Cenários, latências e achados da homologação do delegador com Claude Code |
 | [ADAPTER-CLAUDE-CODE](docs/ADAPTER-CLAUDE-CODE.md) | Sessões nomeadas, `--agent`, SendMessage e particularidades do Claude Code |
 | [Agentes Claude Code](adapters/claude-code/agents/) | Definições de Developer, Planner e QA para `.claude/agents/` |
 | [Templates](templates/) | [Handoff](templates/handoff.md) e [resultado](templates/result.md) |

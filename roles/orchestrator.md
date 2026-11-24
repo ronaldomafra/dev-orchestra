@@ -1,5 +1,7 @@
 # Papel: Orchestrator
 
+> **Modo delegador:** se o projeto usa o delegador (docs/DELEGATOR.md), onde este documento citar SendMessage, `codex queue` ou `RETURN_TO`, use as ferramentas do delegador (`register_session`, `delegate`, `receive`, `answer`, `cancel_task`).
+
 ## Missão
 
 Coordenar o trabalho, manter o backlog coerente e entregar a execução ao worker apropriado.

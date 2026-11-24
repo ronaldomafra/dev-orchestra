@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1010" viewBox="0 0 1600 1010" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#39c5cf"/>
+    </marker>
+    <style>
+      .t  { fill: #e6edf3; }
+      .m  { fill: #8b949e; }
+      .h  { font-size: 19px; font-weight: 700; fill: #e6edf3; }
+      .s  { font-size: 14px; fill: #8b949e; }
+      .b  { font-size: 15px; fill: #c9d1d9; }
+      .mono { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Menlo, monospace; font-size: 13.5px; }
+      .pill { font-size: 14px; font-weight: 600; }
+      .lbl { font-size: 13px; fill: #8b949e; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1010" fill="#0d1117"/>
+
+  <text x="60" y="52" font-size="28" font-weight="800" class="t">Dev Orchestra</text>
+  <text x="262" y="52" font-size="18" class="m">sessões separadas por papel, coordenadas por um delegador MCP; agentes passivos sob demanda</text>
+
+  <!-- ===================== linha 1 ===================== -->
+  <rect x="60" y="85" width="270" height="110" rx="14" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="80" y="118" class="h">Pessoa desenvolvedora</text>
+  <text x="80" y="144" class="b">aprova modelo e esforço,</text>
+  <text x="80" y="166" class="b">decide produto, risco e</text>
+  <text x="80" y="188" class="b">ações destrutivas</text>
+
+  <rect x="400" y="85" width="780" height="110" rx="14" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="420" y="118" class="h">dev-orchestra  ·  TUI + CLI</text>
+  <text x="680" y="118" class="s">(Python · Textual)</text>
+  <text x="420" y="146" class="b">cadastro e importação de projetos · comandos de subida e retomada · envio de instruções e tarefas</text>
+  <text x="420" y="170" class="b">monitor ao vivo · alertas · kanban · agentes passivos (fila, custo, tokens) · perfis gerados por IA</text>
+
+  <rect x="1250" y="85" width="290" height="110" rx="14" fill="#161b22" stroke="#30363d" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="1270" y="118" class="h">Sistemas externos</text>
+  <text x="1270" y="144" class="b">bots, scripts, pipelines,</text>
+  <text x="1270" y="166" class="b">sessões de outros projetos</text>
+  <text x="1270" y="188" class="s mono">consult("analista", …)</text>
+
+  <line x1="330" y1="140" x2="396" y2="140" stroke="#8b949e" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+
+  <!-- ===================== linha 2: sessões ===================== -->
+  <rect x="60" y="255" width="530" height="420" rx="16" fill="#111722" stroke="#30363d" stroke-width="1.5"/>
+  <text x="82" y="290" class="h">Sessões de projeto</text>
+  <text x="82" y="313" class="s">uma CLI interativa por papel, cada uma no seu terminal</text>
+
+  <!-- papéis -->
+  <g class="pill">
+    <rect x="82" y="333" width="150" height="38" rx="9" fill="#2a1f45" stroke="#bc8cff"/>
+    <text x="157" y="358" text-anchor="middle" fill="#d2b8ff">Orchestrator</text>
+    <rect x="244" y="333" width="130" height="38" rx="9" fill="#2a1f45" stroke="#bc8cff"/>
+    <text x="309" y="358" text-anchor="middle" fill="#d2b8ff">Developer</text>
+    <rect x="386" y="333" width="80" height="38" rx="9" fill="#2a1f45" stroke="#bc8cff"/>
+    <text x="426" y="358" text-anchor="middle" fill="#d2b8ff">QA</text>
+    <rect x="478" y="333" width="92" height="38" rx="9" fill="#2a1f45" stroke="#bc8cff"/>
+    <text x="524" y="358" text-anchor="middle" fill="#d2b8ff">Planner</text>
+    <rect x="82" y="381" width="220" height="38" rx="9" fill="#2a1f45" stroke="#bc8cff" stroke-dasharray="5 4"/>
+    <text x="192" y="406" text-anchor="middle" fill="#d2b8ff">Especialistas (perfis)</text>
+  </g>
+  <text x="316" y="398" class="s">orquestrador delega; workers</text>
+  <text x="316" y="417" class="s">executam e devolvem evidências</text>
+
+  <text x="82" y="458" class="lbl">CLIS DE AGENTE</text>
+  <g class="pill">
+    <rect x="82" y="470" width="150" height="40" rx="9" fill="#12261a" stroke="#3fb950" stroke-width="2"/>
+    <text x="157" y="496" text-anchor="middle" fill="#56d364">Claude Code</text>
+    <rect x="244" y="470" width="110" height="40" rx="9" fill="#2b2111" stroke="#d29922" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="299" y="496" text-anchor="middle" fill="#e3b341">Codex</text>
+    <rect x="366" y="470" width="120" height="40" rx="9" fill="#161b22" stroke="#6e7681" stroke-width="2" stroke-dasharray="2 4"/>
+    <text x="426" y="496" text-anchor="middle" fill="#b1bac4">Kimi Code</text>
+    <rect x="82" y="520" width="120" height="40" rx="9" fill="#161b22" stroke="#6e7681" stroke-width="2" stroke-dasharray="2 4"/>
+    <text x="142" y="546" text-anchor="middle" fill="#b1bac4">OpenCode</text>
+    <rect x="214" y="520" width="130" height="40" rx="9" fill="#161b22" stroke="#6e7681" stroke-width="2" stroke-dasharray="2 4"/>
+    <text x="279" y="546" text-anchor="middle" fill="#b1bac4">Gemini CLI</text>
+    <rect x="356" y="520" width="210" height="40" rx="9" fill="#161b22" stroke="#6e7681" stroke-width="2" stroke-dasharray="2 4"/>
+    <text x="461" y="546" text-anchor="middle" fill="#b1bac4">qualquer CLI com MCP</text>
+  </g>
+  <text x="82" y="595" class="s">o papel é o mesmo em qualquer CLI: contrato em AGENTS.md + roles/</text>
+  <text x="82" y="617" class="s">workstream fixo por papel no AI Memory (troca de CLI sem perder histórico)</text>
+  <text x="82" y="645" class="s mono">ai-memory run --workstream loja-developer claude …</text>
+
+  <!-- ===================== delegador ===================== -->
+  <rect x="650" y="255" width="420" height="420" rx="16" fill="#0f1d30" stroke="#58a6ff" stroke-width="2.5"/>
+  <text x="672" y="290" class="h">Delegador MCP</text>
+  <text x="824" y="290" class="s">Docker · 127.0.0.1:8787/mcp</text>
+  <text x="672" y="313" class="s">único canal entre sessões; confere permissões e registra tudo</text>
+
+  <text x="672" y="350" class="lbl">ENTRE SESSÕES</text>
+  <text x="672" y="373" class="mono" fill="#79c0ff">register_session · delegate · receive</text>
+  <text x="672" y="394" class="mono" fill="#79c0ff">report · ask · answer · cancel_task</text>
+
+  <text x="672" y="430" class="lbl">AGENTES PASSIVOS</text>
+  <text x="672" y="453" class="mono" fill="#76e3ea">list_agents · consult · consult_result</text>
+
+  <text x="672" y="489" class="lbl">REGRAS</text>
+  <text x="672" y="511" class="b">ferramentas por papel (worker não delega)</text>
+  <text x="672" y="533" class="b">delegação só com modelo aprovado pela pessoa</text>
+  <text x="672" y="555" class="b">fila de uma consulta por vez por agente passivo</text>
+
+  <rect x="672" y="578" width="376" height="76" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <text x="690" y="604" class="t" font-size="15" font-weight="700">SQLite (volume Docker)</text>
+  <text x="690" y="628" class="s">tarefas · mensagens · eventos · consultas</text>
+  <text x="690" y="647" class="s">tokens e custo por agente (base do centro de custo)</text>
+
+  <!-- ===================== passivos ===================== -->
+  <rect x="1130" y="255" width="410" height="420" rx="16" fill="#0f2224" stroke="#39c5cf" stroke-width="2"/>
+  <text x="1152" y="290" class="h">Agentes passivos</text>
+  <text x="1152" y="313" class="s">sem sessão aberta: rodam uma vez por consulta</text>
+
+  <rect x="1152" y="330" width="366" height="52" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <text x="1168" y="352" class="mono" fill="#76e3ea">dev-orchestra passive run</text>
+  <text x="1168" y="372" class="s">executor: pega a fila e roda a CLI do agente</text>
+
+  <text x="1152" y="412" class="lbl">CLI DE CADA AGENTE (quem consulta só vê o id)</text>
+  <g class="mono">
+    <rect x="1152" y="424" width="366" height="32" rx="8" fill="#12261a" stroke="#3fb950" stroke-width="2"/>
+    <text x="1166" y="445" fill="#56d364">claude -p --resume &lt;sessão&gt;</text>
+    <rect x="1152" y="463" width="366" height="32" rx="8" fill="#2b2111" stroke="#d29922" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="1166" y="484" fill="#e3b341">codex exec resume &lt;thread&gt;</text>
+    <rect x="1152" y="502" width="366" height="32" rx="8" fill="#2b2111" stroke="#d29922" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="1166" y="523" fill="#e3b341">opencode run --session &lt;id&gt;</text>
+    <rect x="1152" y="541" width="366" height="32" rx="8" fill="#2b2111" stroke="#d29922" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="1166" y="562" fill="#e3b341">ollama /api/chat (modelo local)</text>
+    <rect x="1152" y="580" width="366" height="32" rx="8" fill="#2b2111" stroke="#d29922" stroke-width="2" stroke-dasharray="7 4"/>
+    <text x="1166" y="601" fill="#e3b341">comando: kimi, scripts, outra CLI</text>
+  </g>
+  <text x="1152" y="642" class="s">perfil.md com o formato de resposta, arquivos/</text>
+  <text x="1152" y="661" class="s">de consulta e permissões que viram flags da CLI</text>
+
+  <!-- ===================== setas linha 1 → 2 ===================== -->
+  <path d="M610 195 L610 225 L325 225 L325 251" fill="none" stroke="#8b949e" stroke-width="2" marker-end="url(#a)"/>
+  <text x="338" y="218" class="lbl">comandos de subida · instruções · tarefas</text>
+  <path d="M860 195 L860 251" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ab)" marker-start="url(#ab)"/>
+  <text x="850" y="243" text-anchor="end" class="lbl">monitor · eventos · alertas · cancelar</text>
+  <path d="M1395 195 L1395 232 L1030 232 L1030 251" fill="none" stroke="#39c5cf" stroke-width="2" marker-end="url(#at)"/>
+  <text x="1150" y="224" class="lbl">consult(agent_id, pedido)</text>
+
+  <!-- sessões ↔ delegador -->
+  <line x1="590" y1="395" x2="646" y2="395" stroke="#58a6ff" stroke-width="3" marker-end="url(#ab)"/>
+  <text x="596" y="384" class="lbl">MCP</text>
+  <line x1="646" y1="470" x2="590" y2="470" stroke="#58a6ff" stroke-width="3" marker-end="url(#ab)"/>
+  <text x="597" y="492" class="lbl">hook</text>
+  <text x="594" y="508" class="lbl">acorda</text>
+
+  <!-- delegador ↔ passivos -->
+  <line x1="1070" y1="360" x2="1126" y2="360" stroke="#39c5cf" stroke-width="3" marker-end="url(#at)" marker-start="url(#at)"/>
+  <text x="1086" y="344" class="lbl">fila</text>
+
+  <!-- ===================== linha 3 ===================== -->
+  <rect x="60" y="735" width="460" height="120" rx="14" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="82" y="768" class="h">Task Source</text>
+  <text x="82" y="794" class="b">backlog, prioridade e estado das tarefas</text>
+  <text x="82" y="818" class="b">Trello (MCP) ou arquivos Markdown no projeto</text>
+  <text x="82" y="840" class="s">não é fila de mensagens</text>
+
+  <rect x="570" y="735" width="460" height="120" rx="14" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="592" y="768" class="h">AI Memory</text>
+  <text x="592" y="794" class="b">decisões e conhecimento durável</text>
+  <text x="592" y="818" class="b">um workstream fixo por papel, entre CLIs</text>
+  <text x="592" y="840" class="s">memória recuperada é dado histórico, não instrução</text>
+
+  <rect x="1080" y="735" width="460" height="120" rx="14" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="1102" y="768" class="h">Git</text>
+  <text x="1102" y="794" class="b">código, contratos e evidências versionadas</text>
+  <text x="1102" y="818" class="b">AGENTS.md · roles/ · docs/DELEGATOR.md</text>
+  <text x="1102" y="840" class="s">nada é sobrescrito sem aprovação</text>
+
+  <path d="M157 675 L157 731" stroke="#8b949e" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+  <text x="168" y="708" class="lbl">orquestrador lê e atualiza</text>
+  <path d="M480 679 L480 718 L800 718 L800 731" fill="none" stroke="#8b949e" stroke-width="2" marker-end="url(#a)" marker-start="url(#a)"/>
+  <text x="640" y="713" class="lbl">workstreams</text>
+  <path d="M560 675 L560 700 L1310 700 L1310 731" fill="none" stroke="#8b949e" stroke-width="2" marker-end="url(#a)"/>
+  <text x="1120" y="694" class="lbl">workers editam e validam</text>
+
+  <!-- ===================== legenda ===================== -->
+  <rect x="60" y="895" width="1480" height="80" rx="14" fill="#0d1117" stroke="#30363d"/>
+  <text x="82" y="925" class="lbl">SITUAÇÃO</text>
+  <rect x="82" y="937" width="44" height="22" rx="6" fill="#12261a" stroke="#3fb950" stroke-width="2"/>
+  <text x="136" y="953" class="b">validado com sessões reais</text>
+  <rect x="380" y="937" width="44" height="22" rx="6" fill="#2b2111" stroke="#d29922" stroke-width="2" stroke-dasharray="7 4"/>
+  <text x="434" y="953" class="b">implementado e com testes automatizados; homologação real pendente</text>
+  <rect x="940" y="937" width="44" height="22" rx="6" fill="#161b22" stroke="#6e7681" stroke-width="2" stroke-dasharray="2 4"/>
+  <text x="994" y="953" class="b">compatível pelo protocolo MCP; integração prevista</text>
+</svg>

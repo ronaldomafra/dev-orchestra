@@ -8,6 +8,7 @@ Definir o conteúdo mínimo de uma delegação e de um resultado. O formato é o
 | --- | --- | --- |
 | Codex | `codex app-server` + `codex queue` | Nome exato (`/rename`) ou Session UUID (`/status`) |
 | Claude Code | SendMessage entre sessões locais | Nome da sessão (`--name` ou `/rename`) |
+| Delegador (MCP) | Ferramentas do serviço `dev-orchestra`; vale para qualquer CLI e tem precedência sobre as duas linhas acima | `session_id` devolvido por `register_session` |
 
 Todos os papéis de um fluxo usam o mesmo transporte. Trello e outros Task Sources não são canais de comunicação.
 
@@ -58,6 +59,10 @@ Use [templates/result.md](../templates/result.md) para o formato completo. Seja 
 Depois de entregar o handoff, o Orchestrator **encerra o turno**. O resultado chega como uma nova mensagem na sessão do Orchestrator. Não use `sleep`, polling nem inspeção de arquivos ou processos para inferir conclusão. O envio ao worker não substitui o resultado do worker.
 
 No Codex, foi observado em uso real que a resposta fica na fila enquanto a sessão de destino está em *working* e chega quando o turno termina. Por isso manter o turno aberto atrasa o recebimento.
+
+## Transporte delegador
+
+No modo delegador o conteúdo do handoff e do resultado é o mesmo, mas entregue pelas ferramentas `delegate` (Orchestrator) e `report` (worker), sem `RETURN_TO`: o delegador sabe quem delegou. Veja [DELEGATOR](DELEGATOR.md).
 
 <a id="transporte-codex"></a>
 

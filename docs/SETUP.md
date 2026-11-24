@@ -1,6 +1,6 @@
 # Instalação e configuração — Linux/Ubuntu
 
-Este guia prepara as ferramentas usadas pelo Dev Orchestra. Os comandos são executados por você. Não existe um instalador próprio do projeto. A sequência é: dependências, a CLI escolhida (Codex ou Claude Code), checkout, AI Memory, Trello e só então as sessões. No Codex, o App Server é iniciado depois do AI Memory e do Trello; o Claude Code não usa App Server. O [Quick Start](../README.md#quick-start-um-card-dois-agentes) contém o card e os prompts do primeiro fluxo; todas as etapas de instalação estão aqui.
+Este guia prepara as ferramentas usadas pelo Dev Orchestra. Os comandos são executados por você. A ferramenta opcional `dev-orchestra` ([tool/README.md](../tool/README.md)) cadastra projetos e gera os comandos de subida; este guia cobre a preparação das ferramentas de que ela e o método dependem. A sequência é: dependências, a CLI escolhida (Codex ou Claude Code), checkout, AI Memory, Trello e só então as sessões. No Codex, o App Server é iniciado depois do AI Memory e do Trello; o Claude Code não usa App Server. O [Quick Start](../README.md#quick-start-um-card-dois-agentes) contém o card e os prompts do primeiro fluxo; todas as etapas de instalação estão aqui.
 
 ## Requisitos
 

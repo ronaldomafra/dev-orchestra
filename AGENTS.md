@@ -67,8 +67,11 @@ A comunicação usa o transporte do modo configurado, o mesmo para todos os pap�
 | --- | --- | --- |
 | Codex | Sessões conectadas ao mesmo `codex app-server`, mensagens por `codex queue` | docs/ADAPTER-CODEX.md |
 | Claude Code | Uma sessão Claude Code por papel, mensagens por SendMessage; sem App Server, sem `codex queue` e sem subagents da ferramenta Agent para os workers | docs/ADAPTER-CLAUDE-CODE.md |
+| Delegador (MCP) | Qualquer CLI: as sessões falam só pelas ferramentas do serviço `dev-orchestra` (`register_session`, `delegate`, `receive`, `report`, `ask`, `answer`, `cancel_task`); o delegador confere permissões e registra tudo | docs/DELEGATOR.md |
 
 O Task Source nunca deve ser usado para passar handoffs ou resultados.
+
+Quando o projeto usa o **modo delegador** (existe `docs/DELEGATOR.md` e o cadastro tem `delegador = true`), a comunicação entre sessões é **somente** pelas ferramentas do delegador e `docs/DELEGATOR.md` tem precedência sobre os adapters acima em tudo o que se refere a transporte (SendMessage, `codex queue`, `RETURN_TO`). A aprovação de modelo, o handoff, o resultado e o Task Source não mudam.
 
 Depois de delegar, o Orchestrator encerra o turno e aguarda o resultado pelo canal. Não faz polling nem inspeciona arquivos ou processos para deduzir se o worker terminou. O worker envia o resultado pelo mesmo canal sem depender de intervenção manual do usuário.
 

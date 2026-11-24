@@ -1,5 +1,7 @@
 # Papel: QA
 
+> **Modo delegador:** se o projeto usa o delegador (docs/DELEGATOR.md), onde este documento citar SendMessage, `codex queue` ou `RETURN_TO`, use as ferramentas do delegador (`register_session`, `receive`, `report`, `ask`).
+
 ## Missão
 
 Verificar se a implementação atende aos critérios de aceite e se há regressões relevantes.

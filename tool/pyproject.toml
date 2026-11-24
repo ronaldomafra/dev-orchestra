@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dev-orchestra"
+version = "0.1.0"
+description = "Cadastro, subida e retomada de projetos do Dev Orchestra (fase 1)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.10,<3",
+  "tomli-w>=1.0,<2",
+  "textual>=1,<10",
+  "websockets>=14,<17",
+]
+
+[project.scripts]
+dev-orchestra = "dev_orchestra.cli:main"
+
+[project.optional-dependencies]
+delegator = ["mcp>=1.12,<2"]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.25,<2", "ruff>=0.9,<1", "mcp>=1.12,<2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dev_orchestra"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/dev_orchestra/delegator/profiles.py" = ["E501"]  # textos dos perfis
+"src/dev_orchestra/delegator/docker.py" = ["E501"]  # Dockerfile embutido
+"src/dev_orchestra/core/alerts.py" = ["E501"]  # textos e regras em linha
+"src/dev_orchestra/tui/alerts.py" = ["E501"]  # linhas de texto formatado
+"src/dev_orchestra/alerts_cli.py" = ["E501"]  # linhas de texto formatado
+"src/dev_orchestra/core/catalog.py" = ["E501"]
+"src/dev_orchestra/core/sessions.py" = ["E501"]
+"src/dev_orchestra/tui/project_form.py" = ["E501"]
+"src/dev_orchestra/tui/fields.py" = ["E501"]
+"src/dev_orchestra/tui/delegator_setup.py" = ["E501"]
+"src/dev_orchestra/delegator/setup.py" = ["E501"]
+"src/dev_orchestra/core/generator.py" = ["E501"]
+"src/dev_orchestra/profiles_cli.py" = ["E501"]
+"src/dev_orchestra/tui/profile_form.py" = ["E501"]
+"src/dev_orchestra/tui/import_form.py" = ["E501"]
+"src/dev_orchestra/delegator/consults.py" = ["E501"]
+"src/dev_orchestra/core/passive.py" = ["E501"]
+"src/dev_orchestra/passive_cli.py" = ["E501"]
+"src/dev_orchestra/core/mcp_http.py" = ["E501"]
+"src/dev_orchestra/tui/passive.py" = ["E501"]
+"examples/*.py" = ["E501"]
+"tests/conftest.py" = ["E501"]
+"tests/test_forms.py" = ["E501"]
+"tests/test_removal.py" = ["E501"]
+"tests/test_observer.py" = ["E501"]
+"tests/test_tasks.py" = ["E501"]
