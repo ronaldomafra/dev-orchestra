@@ -8,6 +8,14 @@ O Dev Orchestra é um método e uma ferramenta. O **método** é um conjunto de 
 
 Você continua no controle: aprova o modelo e o esforço de cada delegação e toma as decisões de produto, arquitetura e risco. Também vê o trabalho acontecendo em terminais separados, em vez de uma única sessão com subagentes escondidos.
 
+### Demonstração em vídeo
+
+[![Demonstração: o orquestrador no Claude Code delega para o Codex e o Kimi pelo delegador MCP, e a TUI acompanha no kanban e no monitor](docs/assets/video/dev-orchestra-demo.gif)](https://github.com/ronaldomafra/dev-orchestra/raw/main/docs/assets/video/dev-orchestra-demo.mp4)
+
+O orquestrador no Claude Code delega uma tarefa ao developer no Kimi e outra ao QA no Codex, todos pelo mesmo delegador. A TUI acompanha tudo: kanban ao vivo, monitor de eventos e agentes passivos. [Assista ao vídeo em MP4 (1080p, 80 s)](https://github.com/ronaldomafra/dev-orchestra/raw/main/docs/assets/video/dev-orchestra-demo.mp4).
+
+*Demonstração ilustrativa, com dados de exemplo. Hoje o fluxo está validado com Claude Code; veja a [situação por CLI](#situação-por-cli). As telas das CLIs na galeria vêm dos repositórios oficiais de cada projeto.*
+
 ### Destaques
 
 - **Um papel por sessão.** Orchestrator, Developer, QA, Planner e especialistas, cada um com instruções e contexto próprios. O orquestrador delega e os workers executam e devolvem evidências.
